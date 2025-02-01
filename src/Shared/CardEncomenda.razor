@@ -1,0 +1,129 @@
+@inject IOrderService db;
+
+<div class="relative w-full max-w-md rounded-xl bg-white shadow-sm overflow-hidden font-outfit">
+
+    <div class="absolute inset-0 bg-gradient-to-b from-white to-custom_purple opacity-40"></div>
+
+    <div class="relative p-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-3xl font-bold text-black">Encomenda @OrderNumber</h3>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <rect width="36" height="36" fill="url(#pattern0_130_92)"/>
+                        <defs>
+                        <pattern id="pattern0_130_92" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_130_92" transform="scale(0.0104167)"/>
+                        </pattern>
+                        <image id="image0_130_92" width="96" height="96" xlink:href="data:image/png;base64,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"/>
+                        </defs>
+                    </svg>
+                    <span class="text-lg font-semibold text-black">@Date</span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <svg width="42" height="42" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <rect width="36" height="36" fill="url(#pattern0_130_96)"/>
+                        <defs>
+                        <pattern id="pattern0_130_96" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_130_96" transform="scale(0.0104167)"/>
+                        </pattern>
+                        <image id="image0_130_96" width="96" height="96" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAACb0lEQVR4nO2ZMY4TQRBFW4gQwQkIuMQGoJkm4ApEmyPttEndhTZo7rJ7EAI4BdIeAW3MBiBLSEhI4B4P7d818540ocdV9bvGz3YIAAAAAAAAAAAADbBhurSYfnR9DdPlKsO/HnYvbEz38gHHI9eY7g+1hjVRYnlsMX2RDzfWXXmcPh9qDmshx/RRPVSbvQlTCWvgw+vdqzxOD/KBxtlb8LAfrl4Gz+Q3757lON2ph2mnhhCnu0MPwSs5plv1EG1xCOk2eMSFcsaVqulc5cyHVe/5UeVJTecqZ/71YbcfdhcW03f5sL2r6WzlHH/rXve62ruazlXO/MepKqE8ymP6JB+0RzWdrZx/ea5eD1fPLaZv3YbQq5rOVs5/mIXF3Vv1oF2p6WzlHKcb998hhk7U9BTlLBfvnx67b4nTkzymr/JB96ympypn7f33qGk75awlo6ZtlLOWgpq2U85aUNOGylkLatpQOWvZvJqe9Cvnf/zWWLaspq2Vs5bNquk5lLOWzanpuZSzlk2p6bmVs5bNqKlCOdfyv3OTX02PvWlYOabuX16AGHn/8gLEyPuXFyBG3r+8ADHy/uUFiJH3Ly9AjLx/eQFi5P3LCxAj719egBh5//ICxMj7lxcgRt7/0gKOvd6c3z+0xvuAjAAIYBHeT6ixAQSwCO8n1NgAAliE9xNqbAABLML7CTU2gAAW4f2EGhtAAIvwfkKNDSCARXg/ocYGtB1Qa+T19X5CWyOvjwASAShhA8QQgBgCEEMAYroPYOtXIIBEAOpTaGyAfhDGI0g/DBNcfAZEApCfQmMD9IOwtT6CAAAAAAAAAAAgeOUn5/bs4jlc3e0AAAAASUVORK5CYII="/>
+                        </defs>
+                    </svg>
+                    <div class="flex flex-col">
+                        <span class="text-base font-semibold text-black">@Address</span>
+                        <span class="text-base font-medium text-black">@PostalCode</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2: Content and Status -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <rect width="36" height="36" fill="url(#pattern0_130_97)"/>
+                        <defs>
+                        <pattern id="pattern0_130_97" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_130_97" transform="scale(0.0104167)"/>
+                        </pattern>
+                        <image id="image0_130_97" width="96" height="96" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAACu0lEQVR4nO3czWoTURjG8dmoGwUFQcQ7qLpyJ/U9WhBdiBfhIrbnJQqCOW+6ydaNYqnojejKj5tIK16DCz/aKn5ElGOtiJA0yZnkOcl5fnBWLnxn/jOTzHRIVREREREREf0nOP/WnL77u0Q/mNOfwy7u0ETm9NsoO5wBahac/8oAQCb+CwMAmfOfkQEs4f+exqomLTj9xACKC2DidxhAgWeA6DYDKC5Ax90+aosrx/ZW82rz0L//zs8AMAYAYwAwBgBjADAGAGMAMAYAYwAwBgBjADAGAIM/Ly8dA4AxABgDgDEAGAOAMQAYA8x4AMvg3Z6s3gMaFQOAMQAYA4AxABgDgDEAGAOAMQAYA4AxABgDgDEAGAOAMQAYA4DN3PPzecMAYAwAxgBg5nRrUISO84fRM841E32zz1lwDT3jXAtOnw0KEES7d8/fOIKec26ZrPh9X+cQ3TDR6wwxAatLN08F8d/R7+tYJqtCMNHH6A23kgO0l26dCOLfozfeSg0QtUQv81Kk2EcvJtow0R76KLQSz4A9rYt6peTLUZWDO65x3Jy/l/qTlzaDq8rJ6oXGSXO6bKJPzenr1N+fsxlY6H1ORETUVxA9G5yu7T6g8zu7SzfM+Ydtt3wGvetyn29s8Qdf4zOj4PyPvt8iJN7E+Uedhc5Bzlfzzg9OXw3/dc6/nGaE3OdLFsQ/GfX7dBBd53y1XVMHXHZc/8tR65I/Xfp8yX5/oI17Zyn6oPT5kgXnN8fdwCDaLX2+ZInPf7ZKn2/i7w3ZoCPM+Y+lzzf3p3jIfL5k8Q4y4Qi7X/p8yeLt+1h/phTttRebC6XPV4v4eGH0o0vXOF9N4m17EH0x/NHlnzfONQ5MK0Du89W5kesDT3fRXjzyERuX+3y1ibfv8Q4yfoMIott/Vjd+oOVwTc19PiIiIiIiqmbeL8eREtmZBHO7AAAAAElFTkSuQmCC"/>
+                        </defs>
+                    </svg>
+                    <div class="flex flex-col">
+                        @foreach (var product in Products)
+                        {
+                            <span class="text-base font-semibold text-black">@product</span>
+                        }                        
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 pt-3">
+                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <rect width="36" height="36" fill="url(#pattern0_130_98)"/>
+                        <defs>
+                        <pattern id="pattern0_130_98" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_130_98" transform="scale(0.0104167)"/>
+                        </pattern>
+                        <image id="image0_130_98" width="96" height="96" xlink:href="data:image/png;base64,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"/>
+                        </defs>
+                    </svg>
+                    <select class="rounded-full border border-gray-300 px-6 py-1 text-sm font-medium focus:outline-none ring-2 ring-custom_purple"
+                            @onchange="HandleStateChange">
+                        @if (Status == "Pendente")
+                        {
+                            <option value="1" selected>Pendente</option>
+                            <option value="2">Entregue</option>
+                        }
+                        else if (Status == "Concluída")
+                        {
+                            <option value="2" selected>Entregue</option>
+                            <option value="1">Pendente</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int OrderNumber { get; set; }
+    [Parameter]
+    public string Status { get; set; }
+    [Parameter]
+    public DateOnly Date { get; set; }
+    [Parameter]
+    public List<string> Products { get; set; }
+    [Parameter]
+    public string Address { get; set; }
+    [Parameter]
+    public string PostalCode { get; set; }
+    [Parameter] 
+    public EventCallback OnOrderStatusChanged { get; set; }
+
+    private async Task HandleStateChange(ChangeEventArgs e)
+    {
+        // Capturar o valor selecionado no select
+        int selectedEstadoId = int.Parse(e.Value.ToString());
+
+        // Chamar a fun��o UpdateOrderState
+        await db.UpdateOrderState(OrderNumber, selectedEstadoId);
+
+        // Atualizar a interface, se necess�rio
+        if (selectedEstadoId == 1)
+        {
+            Status = "Pendente";
+        }
+        else if (selectedEstadoId == 2)
+        {
+            Status = "Concluída";
+        }
+        await OnOrderStatusChanged.InvokeAsync(null);
+    }
+
+}

@@ -1,0 +1,91 @@
+<div class="max-w-md bg-white p-6 rounded-2xl relative font-outfit drop-shadow-2xl">
+    <div class="flex justify-center items-start">
+        <h2 class="text-5xl font-extrabold text-custom_purple text-center">
+            @if (Linha.Id == 1)
+            {
+                <span>Vaso Standard</span>
+            }
+            else
+            {
+                <span>Vaso Deluxe</span>
+            }
+        </h2>
+    </div>
+    @if(Linha.Id == 1){
+        <ol class="space-y-3 mb-6 font-semibold text-lg mt-6">
+                <li class="flex gap-2">
+                    <span class="w-6 h-6 bg-custom_purple rounded-full flex items-center justify-center text-white text-sm">
+                        <span class="text-sm text-white">1</span>
+                    </span>
+                    <span>@Linha.Etapas[0].Instrucao</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="w-6 h-6 bg-custom_purple rounded-full flex items-center justify-center text-white text-sm">
+                        <span class="text-sm text-white">2</span>
+                    </span>
+                    <span>@Linha.Etapas[1].Instrucao</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="w-6 h-6 bg-custom_purple rounded-full flex items-center justify-center text-white text-sm">
+                        <span class="text-sm text-white">3</span>
+                    </span>
+                    <span>@Linha.Etapas[2].Instrucao</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="w-6 h-6 bg-custom_purple rounded-full flex items-center justify-center text-white text-sm">
+                        <span class="text-sm text-white">4</span>
+                    </span>
+                    <span>@Linha.Etapas[3].Instrucao</span>
+                </li>
+        </ol>
+    }else{
+            <ol class="space-y-3 mb-6 font-semibold text-lg mt-6">
+                <li class="flex gap-2">
+                    <span class="w-6 h-6 bg-custom_purple rounded-full flex items-center justify-center text-white text-sm">
+                        <span class="text-sm text-white">1</span>
+                    </span>
+                    <span>@Linha.Etapas[0].Instrucao</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="w-6 h-6 bg-custom_purple rounded-full flex items-center justify-center text-white text-sm">
+                        <span class="text-sm text-white">2</span>
+                    </span>
+                    <span>@Linha.Etapas[1].Instrucao</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="w-6 h-6 bg-custom_purple rounded-full flex items-center justify-center text-white text-sm">
+                        <span class="text-sm text-white">3</span>
+                    </span>
+                    <span>@Linha.Etapas[2].Instrucao</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="w-6 h-6 bg-custom_purple rounded-full flex items-center justify-center text-white text-sm">
+                        <span class="text-sm text-white">4</span>
+                    </span>
+                    <span>@Linha.Etapas[3].Instrucao</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="w-6 h-6 bg-custom_purple rounded-full flex items-center justify-center text-white text-sm">
+                        <span class="text-sm text-white">5</span>
+                    </span>
+                    <span>@Linha.Etapas[4].Instrucao</span>
+                </li>  
+        </ol>
+    }
+
+    <div class="mt-6 flex justify-center">
+        <button @onclick="() => OnEdit.InvokeAsync(Linha)" class="w-full py-2 bg-custom_purple/95 text-white rounded-lg font-black text-sm sm:text-base xl:text-lg 2xl:text-xl hover:bg-custom_purple hover:shadow-lg hover:scale-105 transition-all duration-500 ease-in-out">
+            Editar
+        </button>
+    </div>    
+</div>
+
+@code {
+    [Parameter] public EventCallback<LinhaDeMontagemModel> OnEdit { get; set; }
+
+
+    [Parameter]
+    public LinhaDeMontagemModel Linha { get; set; }
+
+
+}

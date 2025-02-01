@@ -1,0 +1,215 @@
+@page "/encomendas"
+@using Bloomify.Shared
+
+@inject IOrderService db1
+@inject IUserService db2
+@inject AuthenticationStateProvider AuthProvider
+@inject IProductService ProductService
+@inject ILinhaDeMontagemService linhaService
+
+<div class="bg-white min-h-screen flex-col flex overflow-hidden">
+    <NavBarUtilizador/>
+    
+    <div class="relative flex-auto flex items-center justify-center">
+        <!-- Background SVG -->
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <svg viewBox="0 0 1280 672" fill="none" xmlns="http://www.w3.org/2000/svg" 
+                class="w-full h-full object-cover">
+                <g filter="url(#filter0_f_32_4)">
+                    <path d="M567.097 1641.67C1087.23 1781.04 1602.84 1543.37 1718.74 1110.82C1834.65 678.269 1506.95 214.636 986.815 75.2658C466.679 -64.1041 -48.9306 173.566 -164.832 606.118C-280.734 1038.67 46.962 1502.3 567.097 1641.67Z" fill="url(#paint0_linear_32_4)"/>
+                </g>
+                <defs>
+                    <filter id="filter0_f_32_4" x="-223.138" y="0.393372" width="2000.19" height="1716.15" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                        <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                        <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_32_4"/>
+                    </filter>
+                    <linearGradient id="paint0_linear_32_4" x1="777" y1="100" x2="777" y2="1000" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#3F784C" stop-opacity="0"/>
+                        <stop offset="50%" stop-color="#3F784C" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#3F784C" stop-opacity="0.95"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <div class="container flex flex-col mx-auto px-4 sm:px-6 lg:px-8 items-center justify-center w-screen">
+            <!-- Título -->
+            <div class="text-center mb-2 mt-4">
+                @if(tipo == "Cliente"){
+                    <h1 class="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black font-outfit text-custom_green">
+                        As Minhas Encomendas
+                    </h1>
+                }else if(tipo == "Funcionario"){
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black font-outfit text-custom_green">
+                        Olá @nome, vamos trabalhar?
+                    </h1>
+                }
+            </div>
+            
+            <!-- Card Container com largura máxima e centralizado -->
+            <div class="w-11/12 md:w-full mb-6">
+                <div class="bg-white rounded-3xl shadow-2xl py-3 px-4 sm:px-6 lg:px-8 [filter:drop-shadow(0px_0px_20px_rgba(0,0,0,0.20))]">
+                    <!-- Botões com espaçamento responsivo -->
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <button 
+                            class="@(ActiveTab == "pending" ? "bg-custom_green" : "bg-opacity-50 bg-custom_green") rounded-2xl text-white font-black font-outfit text-lg sm:text-xl px-6 sm:px-8 py-2"
+                            @onclick="SetPending">
+                            Pendentes
+                        </button>
+                        <button 
+                            class="@(ActiveTab == "delivered" ? "bg-custom_green" : "bg-opacity-50 bg-custom_green") rounded-2xl text-white font-black font-outfit text-lg sm:text-xl px-6 sm:px-8 py-2"
+                            @onclick="SetDelivered">
+                            Entregues
+                        </button>
+                    </div>
+                    
+                    <!-- Cards com espaçamento vertical -->
+                    <div class="space-y-3">
+                        @foreach (var order in PaginatedOrders)
+                        {
+                            var percentage = PercentagemConclusaoPorOrderId.ContainsKey(order.Id) ? PercentagemConclusaoPorOrderId[order.Id] : 0;
+                            <CardEntregas Order="order" Percentage="percentage" OrderState="@order.Estado" />
+                        }
+                        
+                        <!-- Controles de paginação -->
+                        <div class="flex justify-center items-center space-x-4">
+                            <button @onclick="PreviousPage" 
+                                    disabled="@(!CanGoBack)" 
+                                    class="text-custom_purple text-2xl rounded-sm p-1 transition-all transform hover:scale-105 disabled:opacity-50">
+                                <svg width="60" height="32" viewBox="0 0 64 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15.96 12H64V20H15.96V32L0 16L15.96 0V12Z" fill="#783F6B"/>
+                                </svg>
+                            </button>
+                            <span class="text-lg font-bold text-gray-700">Página @CurrentPage de @TotalPages</span>
+                            <button @onclick="NextPage" 
+                                    disabled="@(!CanGoNext)" 
+                                    class="text-custom_purple text-2xl rounded-sm p-1 transition-all transform hover:scale-105 disabled:opacity-50">
+                                <svg width="60" height="32" viewBox="0 0 64 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M48.04 12H0V20H48.04V32L64 16L48.04 0V12Z" fill="#783F6B"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string ActiveTab = "pending";
+    private string tipo = "";
+    private string nome = "";
+    private List<OrderModel> Orders = new();
+    private Dictionary<int, int> PercentagemConclusaoPorOrderId = new();
+
+    private int CurrentPage = 1;
+    private int PageSize = 3;
+    private int TotalPages => Math.Max((int)Math.Ceiling((double)FilteredOrders.Count / PageSize), 1);
+    private List<OrderModel> PaginatedOrders => FilteredOrders.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+
+    private bool CanGoNext => CurrentPage < TotalPages;
+    private bool CanGoBack => CurrentPage > 1;
+
+    private List<OrderModel> FilteredOrders => 
+        Orders.Where(o => o.Estado == (ActiveTab == "pending" ? "Pendente" : "Concluída")).ToList();
+
+    private void SetPending()   
+    {
+        ActiveTab = "pending";
+        CurrentPage = 1;
+    }
+
+    private void SetDelivered()
+    {
+        ActiveTab = "delivered";
+        CurrentPage = 1;
+    }
+
+    private void NextPage()
+    {
+        if (CanGoNext)
+        {
+            CurrentPage++;
+        }
+    }
+
+    private void PreviousPage()
+    {
+        if (CanGoBack)
+        {
+            CurrentPage--;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string role = await auth.GetTipo();
+        string email = await auth.GetEmail();
+
+        if (!string.IsNullOrEmpty(role))
+        {
+            tipo = role;
+        }
+        if (!string.IsNullOrEmpty(email))
+        {
+            if(tipo == "Funcionario")
+            {
+                var user = await db2.GetUser(email);
+                var funcionario = await db2.GetFuncionario(email);
+
+                nome = ParseNome(user.Nome);
+                if (funcionario > 0)
+                {
+                    Orders = await db1.GetOrdersByFuncionario(funcionario);
+                }
+            }
+            else if (tipo == "Cliente")
+            {
+                var user = await db2.GetUser(email);
+                var cliente = await db2.GetCliente(user.UserId);
+
+                if (cliente != null)
+                {
+                    Orders = await db1.GetOrdersByClient(cliente.NIF);
+                }
+            }
+
+
+            foreach (var order in Orders)
+            {
+                var estado = await db1.GetEstadoEncomenda(order.Id);
+                order.Estado = estado;
+
+                if (order.Products != null && order.Products.Any())
+                {
+                    int totalPercentage = 0;
+                    int totalLines = 0;
+
+                    foreach (var product in order.Products)
+                    {
+                        var linhaDeMontagem = await linhaService.GetLinhaDeMontagemByProduto(product.Id);
+
+                        if (linhaDeMontagem != null)
+                        {
+                            totalPercentage += linhaDeMontagem.Percentagem_Conclusao;
+                            totalLines++;
+                        }
+                    }
+
+                    // Calcular a percentagem de conclusão
+                    var percentagemConclusao = totalLines > 0 ? (totalPercentage / totalLines) : 0;
+                    PercentagemConclusaoPorOrderId[order.Id] = percentagemConclusao;
+                }
+            }
+        }
+    }
+
+    private string ParseNome(string nome)
+    {
+        string[] partesNome = nome.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return partesNome.Length > 0 ? partesNome[0] : "Utilizador";
+    }
+}

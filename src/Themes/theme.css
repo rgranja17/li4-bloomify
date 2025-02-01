@@ -1,0 +1,74 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add these to your global CSS or tailwind.config.js */
+@keyframes slide-in-left {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+  /* Bouncy Pulse Animation */
+  .animate-pulse-bounce {
+    animation: pulse-bounce 1.5s ease-in-out infinite;
+  }
+
+  /* Color Shift Pulse */
+  .animate-pulse-color {
+    animation: pulse-color 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @keyframes pulse-bounce {
+    0%, 100% { transform: scale(1); }
+    50% { 
+      transform: scale(1.15) rotate(-2deg); 
+      text-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+  }
+
+  @keyframes pulse-color {
+    0%, 100% { 
+      transform: scale(1);
+      color: theme('colors.custom_green');
+    }
+    50% { 
+      transform: scale(1.1);
+      color: theme('colors.green.600');
+    }
+  }
+
+  @layer utilities {
+    .animate-slide-in-left {
+      animation: slide-in-left 2s ease-out forwards;
+    }
+  
+    .animate-slide-in-right {
+      animation: slide-in-right 2s ease-out forwards;
+    }
+  
+    .animate-pulse-soft {
+      animation: pulse-soft 2s ease-in-out infinite;
+    }
+  }

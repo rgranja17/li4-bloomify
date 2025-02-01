@@ -1,0 +1,296 @@
+@page "/linha-montagem/{idProduto:int}"
+@using Bloomify.Shared
+
+@inject IJSRuntime js
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager NavManager
+@inject ILinhaDeMontagemService linhaService
+@inject IEtapaService etapaService
+@inject IComponentService componentService
+@inject IProductService produtoService
+
+<div class="w-screen h-screen overflow-x-hidden">
+    <NavBarUtilizador />
+    <div class="container mx-auto p-4 2xl:mt-8">
+        <div class="flex flex-col lg:flex-row gap-4 font-outfit 2xl:mt-10 p-4 items-start justify-center">
+            <div class="w-full lg:w-1/4 bg-white rounded-2xl [filter:drop-shadow(0px_0px_20px_rgba(0,0,0,0.20))] p-3 md:px-8 md:py-4 lg:py-0 xl:px-4">
+                <div style="background: linear-gradient(to right, #3F784C @($"{linha.Percentagem_Conclusao}%"), #D4D1D1 @($"{linha.Percentagem_Conclusao}%"))" 
+                        class="rounded-full md:p-2 mb-8 md:mb-14 mt-4 transition-all duration-300">
+                    <p class="text-center font-bold text-xl">@($"{linha.Percentagem_Conclusao}%")</p>
+                </div>
+
+            @foreach (var step in Steps)
+            {
+                <div class="mb-4 relative">
+                    <div class="@GetStepClass(step.NumeroEtapa) lg:py-3 cursor-pointer items-center justify-center flex" @onclick="() => SelectStep(step.NumeroEtapa)">
+                        <h2 class="text-xl md:text-3xl font-bold py-4 text-center">Etapa @step.NumeroEtapa</h2>
+
+                        @if (step.Estado == "Finalizada")
+                        {
+                            <div class="absolute top-2 right-2 w-6 h-6 bg-custom_green rounded-full flex justify-center items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8 15.414l-4.707-4.707a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            </div>
+
+            <div class="flex-1 w-full h-full">
+                <div class="bg-white rounded-2xl [filter:drop-shadow(0px_0px_20px_rgba(0,0,0,0.20))] px-4 py-2 mb-2">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-extrabold mb-2 md:mb-0">Componentes:</h2>
+                            @foreach (var component in Components)
+                            {
+                                <p class="text-lg mb-2">@component.Nome <span>(@component.Quantidade <span>x)</span></span>
+                                </p>
+                            }
+                        </div>
+                        <div class="flex flex-col items-end justify-between h-full pl-16">
+                            <h2 class="text-custom_purple text-xl md:text-4xl font-extrabold md:mb-0">Linha de montagem @idLinha</h2>
+                            <div class="flex items-center gap-4 mt-4 md:mt-14">
+                                <div class="bg-custom_gray rounded-lg px-4 py-2">
+                                    @if(tipo == "Funcionario")
+                                    {
+                                        <span class="text-xl font-bold">@FormatTime(elapsedTime)</span>
+                                    }
+                                    else if(tipo == "Cliente")
+                                    {
+                                        <span class="text-xl font-bold">@linha.TempoDeMontagem</span>
+                                    }
+                                </div>
+                                <button class="bg-red-600 text-white text-2xl px-6 py-1 rounded-lg font-extrabold"
+                                        @onclick="Exit">
+                                    Sair
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl [filter:drop-shadow(0px_0px_20px_rgba(0,0,0,0.20))] p-4 py-4">
+                    <div class="grid md:grid-cols-2 gap-6 mb-5 mt-3 px-2">
+                        <div class="bg-custom_gray rounded-lg p-4 flex items-center justify-center min-h-[300px]">
+                            @if (CurrentStep?.Imagem != null)
+                            {
+                                <img src="@CurrentStep.Imagem" alt="@CurrentStep.Id" class="h-80 w-80" />
+                            }
+                            else
+                            {
+                                <p class="text-2xl font-bold text-gray-400">&lt;imagem&gt;</p>
+                            }
+                        </div>
+                        <div class="bg-custom_gray rounded-lg px-4 flex flex-col items-center justify-center gap-4 py-2">
+                            <h3 class="text-xl font-bold">Etapa @(CurrentStep != null ? CurrentStep.NumeroEtapa : "<?>")</h3>
+                            <p class="text-2xl font-bold">@(CurrentStep?.Instrucao ?? "<Instrução>")</p>
+                            <div class="w-3/4 h-2 bg-custom_green rounded-full"></div>
+                            <p class="text-2xl font-bold text-center">@(CurrentStep?.Descricao ?? "<Descrição>")</p>
+                        </div>
+                    </div>
+                    @if (tipo == "Funcionario")
+                    {
+                        <div class="flex space-x-4 justify-end px-2">
+                            <button class="bg-green-600 text-white px-4 py-0 md:py-2 rounded-lg font-bold text-lg" @onclick="() => ConcluirEtapa(CurrentStep.NumeroEtapa - 1)">
+                                Concluir Etapa
+                            </button>
+                            <button class="bg-red-600 text-white px-4 py-0 md:py-2 rounded-lg font-bold text-lg" @onclick="() => RetornarEtapa(CurrentStep.NumeroEtapa - 1)">
+                                Retornar Etapa
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int idProduto { get; set; }
+
+    private int CurrentProgress { get; set; } = 0;
+    private int CurrentStepId { get; set; } = 1;
+    private string tipo = "";
+    private int idLinha = 0;
+
+    private Timer? timer;
+    private TimeSpan elapsedTime = TimeSpan.Zero;
+
+    private EtapaModel? CurrentStep => Steps.FirstOrDefault(s => s.NumeroEtapa == CurrentStepId);
+
+    private List<EtapaModel> Steps { get; set; } = new();
+
+    private LinhaDeMontagemModel linha = new();
+
+    private List<ComponentModel> Components { get; set; } = new();
+    private ProductModel produto = new ProductModel();
+
+    private string GetStepClass(int stepId)
+    {
+        return $"bg-custom_gray rounded-lg cursor-pointer transition-all duration-200 {(CurrentStepId == stepId ? "ring-2 ring-custom_green" : "")}";
+    }
+
+    private void SelectStep(int stepId)
+    {
+        CurrentStepId = stepId;
+    }
+
+    private string FormatTime(TimeSpan time)
+    {
+        return $"{time.Hours:D2}:{time.Minutes:D2}:{time.Seconds:D2}";
+    }
+
+    private void StartTimer()
+    {
+        timer = new Timer(state =>
+        {
+            elapsedTime = elapsedTime.Add(TimeSpan.FromSeconds(1));
+            linha.TempoDeMontagem = elapsedTime;
+            InvokeAsync(StateHasChanged);
+        }, null, 0, 1000);
+    }
+
+    private void UpdateProgress()
+    {
+        int finishedSteps = Steps.Count(step => step.Estado == "Finalizada");
+        linha.Percentagem_Conclusao = Steps.Count > 0 ? (finishedSteps * 100) / Steps.Count : 0;
+    }
+
+    private async Task ConcluirEtapa(int etapaIndex)
+    {
+        if (PodeConcluirEtapa(etapaIndex))
+        {
+            Steps[etapaIndex].Estado = "Finalizada";
+            UpdateProgress();
+            InvokeAsync(StateHasChanged);
+        }else
+            await js.InvokeVoidAsync("alert", "Não pode concluír esta etapa sem concluír as anteriores pirmeiro");
+    }
+
+    private void RetornarEtapa(int etapaIndex)
+    {
+        if (etapaIndex >= 0 && etapaIndex < Steps.Count)
+        {
+            if(Steps[etapaIndex].Estado == "Finalizada")
+            {
+                Steps[etapaIndex].Estado = "Em andamento";
+                for (int i = etapaIndex + 1; i < Steps.Count; i++)
+                {
+                    if (Steps[i].Estado == "Finalizada")
+                    {
+                        Steps[i].Estado = "Em andamento";
+                    }
+                }
+                if(etapaIndex > 0)
+                {
+                    SelectStep(etapaIndex);
+                }
+                UpdateProgress();
+                InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                js.InvokeVoidAsync("alert", "Não podes retornar uma etapa por concluir");
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string? role = await auth.GetTipo();
+
+        if(role != null){
+            tipo = role;
+        }
+        produto = await produtoService.GetProduct(idProduto);
+
+        linha = await linhaService.GetLinhaDeMontagemByProduto(idProduto);
+
+        if(linha != null)
+        {
+            idLinha = linha.Id;
+            Steps = await etapaService.GetEtapasByLinhaDeMontagem(produto.Preco == 15 ? 1 : 2);
+            
+            AtualizarEtapasConcluidas();
+            if(tipo == "Funcionario")
+            {
+                elapsedTime = linha.TempoDeMontagem;
+                StartTimer();
+            }
+        }
+
+        Components = await componentService.GetComponentesParaMontagem(linha.Id);
+    }
+
+    private void AtualizarEtapasConcluidas()
+    {
+        if (Steps.Count == 0)
+            return;
+
+        int totalEtapas = Steps.Count;
+        int etapasConcluidas = (int)Math.Round((linha.Percentagem_Conclusao / 100.0) * totalEtapas);
+
+        for (int i = 0; i < totalEtapas; i++)
+        {
+            if (i < etapasConcluidas)
+            {
+                Steps[i].Estado = "Finalizada";
+            }
+            else if(i == etapasConcluidas)
+            {
+                Steps[i].Estado = "Em andamento";
+                CurrentStepId = i + 1;
+            }else 
+            {
+                Steps[i].Estado = "Em andamento";
+            }
+        }
+    }
+
+    private bool PodeConcluirEtapa(int etapaIndex)
+    {
+        if (etapaIndex == 0 || Steps[etapaIndex - 1].Estado == "Finalizada")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private async Task Exit()
+    {
+        if (timer != null)
+        {
+            await timer.DisposeAsync();
+        }
+
+        if (linha.Percentagem_Conclusao == 100)
+        {
+            await linhaService.UpdateLinhaDeMontagem(linha.Id, linha.TempoDeMontagem, linha.Percentagem_Conclusao, 3);
+        }
+        else if (linha.Percentagem_Conclusao == 0)
+        {
+            await linhaService.UpdateLinhaDeMontagem(linha.Id, linha.TempoDeMontagem, linha.Percentagem_Conclusao, 1);
+        }
+        else
+        {
+            await linhaService.UpdateLinhaDeMontagem(linha.Id, linha.TempoDeMontagem, linha.Percentagem_Conclusao, 2);
+        }
+
+        NavManager.NavigateTo("/encomendas", true);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (timer != null)
+        {
+            await timer.DisposeAsync();
+        }
+    }
+}

@@ -1,0 +1,200 @@
+@page "/painelAdmin/componentes"
+@using Bloomify.Shared
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject AuthenticationStateProvider AuthProvider
+@inject IComponentService db
+
+@if (tipo == null)
+{
+    <div class="flex justify-center items-center h-screen">
+        <span>Loading...</span>
+    </div>
+}
+
+@if(tipo != "Admin")
+{
+    <Error403 />
+}else
+{
+<div class="h-screen overflow-x-hidden bg-white relative"> 
+    <NavBarUtilizador />
+    <div class="absolute inset-0 w-auto h-auto overflow-hidden">
+        <svg viewBox="0 0 1280 672" fill="none" xmlns="http://www.w3.org/2000/svg" 
+            class="w-full h-full object-cover">
+            <g filter="url(#filter0_f_32_4)">
+                <path d="M567.097 1641.67C1087.23 1781.04 1602.84 1543.37 1718.74 1110.82C1834.65 678.269 1506.95 214.636 986.815 75.2658C466.679 -64.1041 -48.9306 173.566 -164.832 606.118C-280.734 1038.67 46.962 1502.3 567.097 1641.67Z" fill="url(#paint0_linear_32_4)"/>
+            </g>
+            <defs>
+                <filter id="filter0_f_32_4" x="-223.138" y="0.393372" width="2000.19" height="1716.15" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                    <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                    <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_32_4"/>
+                </filter>
+                <linearGradient id="paint0_linear_32_4" x1="777" y1="100" x2="777" y2="1000" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#3F784C" stop-opacity="0"/>
+                    <stop offset="50%" stop-color="#3F784C" stop-opacity="0.6"/>
+                    <stop offset="100%" stop-color="#3F784C" stop-opacity="0.95"/>
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+    
+    <div class="relative h-auto flex flex-col items-center justify-center px-8 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 font-outfit mt-0 md:mt-10 xl:mt-10">
+        <h1 class="text-3xl sm:text-6xl lg:text-7xl xl:text-8xl font-black text-custom_green mb-6 text-center">Gerir Componentes</h1>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-4xl w-full px-2 sm:px-4">
+
+            @foreach (var componente in componentes){
+                <CardComponente Nome="@componente.Nome" Cor="@componente.Cor" Quantidade="@componente.Quantidade" Id="@componente.Id" />
+            }
+
+            <button @onclick="ShowModal" class="w-full h-full bg-custom_purple/95 text-white rounded-lg font-black text-sm sm:text-base xl:text-lg 2xl:text-xl hover:bg-custom_purple hover:shadow-lg hover:scale-105 transition-all duration-500 ease-in-out">
+                <span class="text-4xl sm:text-6xl font-black">+</span>
+            </button>
+        </div>
+
+        
+        @if (isModalVisible)
+        {
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+                <div class="bg-white w-full sm:w-11/12 md:w-3/4 lg:w-1/2 xl:w-1/3 p-6 rounded-lg shadow-lg overflow-auto">
+                    
+                    <div class="text-right">
+                        <button 
+                            @onclick="CloseModal" 
+                            class="text-xl font-bold text-custom_purple hover:text-custom_purple/80 transition duration-300" 
+                            aria-label="Fechar Modal">
+                            X
+                        </button>
+                    </div>
+
+                    <h2 class="text-4xl font-bold text-custom_purple mb-6 text-center">Adicionar Stock</h2>
+
+                    <EditForm Model="@newStock" OnValidSubmit="SubmitAdicionarStock">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                    
+                        <div class="space-y-6">
+                        
+                        
+                            <div>
+                                <label for="componenteId" class="block text-lg font-semibold text-gray-700">ID do Componente</label>
+                                <input type="number" id="componenteId" 
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-custom_purple"
+                                       @bind="newStock.ID" placeholder="Digite o ID do componente" />
+                            </div>
+                        
+                        
+                            <div>
+                                <label for="quantidade" class="block text-lg font-semibold text-gray-700">Quantidade</label>
+                                <input type="number" id="quantidade" 
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-custom_purple"
+                                       @bind="newStock.Quantidade" placeholder="Digite a quantidade" />
+                            </div>
+
+                        
+                            <div>
+                                <label for="nomeComponente" class="block text-lg font-semibold text-gray-700">Nome do Componente</label>
+                                <input type="text" id="nomeComponente"
+                                       class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                                       value="@(getNomeComponente(newStock.ID))" readonly />
+                            </div>
+
+                        
+                            <div>
+                                <label for="novaQuantidade" class="block text-lg font-semibold text-gray-700">Nova Quantidade</label>
+                                <input type="number" id="novaQuantidade"
+                                       class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed focus:ring-gray-300"
+                                       value="@(getQuantidadeComponente(newStock.ID)+newStock.Quantidade)" readonly />
+                            </div>
+
+                        
+                            <div class="flex justify-center mt-8">
+                                <button
+                                    type="submit"
+                                    class="px-8 py-3 bg-custom_purple/95 text-white rounded-lg font-black text-sm sm:text-base xl:text-lg 2xl:text-xl hover:bg-custom_purple hover:shadow-lg hover:scale-105 transition-all duration-500 ease-in-out"
+                                    aria-label="Adicionar ao estoque">
+                                    Adicionar
+                                </button>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+}
+
+@code {
+    private bool isModalVisible = false;
+    private string tipo;
+    private List<ComponentModel> componentes = new List<ComponentModel>();
+
+    private AlterarStock newStock = new AlterarStock();
+
+    private void ShowModal()
+    {
+        isModalVisible = true;
+    }
+
+    private async void CloseModal() {
+        isModalVisible = false;
+        await CarregarComponentes(); // Recarrega a lista de componentes
+        StateHasChanged(); // Garante que a UI seja atualizada
+    }
+
+    private async Task CarregarComponentes()
+    {
+        componentes = await db.GetComponentes(); // Novo método para carregar componentes
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string? role = await auth.GetTipo();
+
+        if(role != null){
+            tipo = role;
+        }
+
+        await CarregarComponentes();
+
+    }
+
+    private async Task SubmitAdicionarStock()
+    {
+        int quantidade = getQuantidadeComponente(newStock.ID);
+        if (newStock.Quantidade + quantidade >= 0 && componentes.Any(c => c.Id == newStock.ID)) {
+            await db.UpdateComponentQuantity(newStock.ID, newStock.Quantidade + quantidade);
+            CloseModal();
+        }
+    }
+
+    private string getNomeComponente(int id) {
+        var componente = componentes.FirstOrDefault(c => c.Id == id);
+        return componente?.Nome ?? string.Empty;  // Garantir que nunca seja null
+    }
+
+    private int getQuantidadeComponente(int id) {
+        var componente = componentes.FirstOrDefault(c => c.Id == id);
+        if (componente != null) {
+            return componente.Quantidade;
+        } else {
+            return 0;    
+        }
+    }
+
+    private class AlterarStock {
+        [Required(ErrorMessage = "O ID do Componente é obrigatório")]
+        public int ID { get; set; } = 0;
+
+        [Required(ErrorMessage = "A Quantidade é obrigatória")]
+        public int Quantidade { get; set; } = 0;
+    }
+}

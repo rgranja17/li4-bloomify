@@ -1,0 +1,503 @@
+@page "/carrinho"
+@using Bloomify.Shared
+@using System.Text.RegularExpressions
+
+@inject ICartService cart
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthProvider
+@inject IUserService db
+@inject IProductService productService
+@inject IOrderService orderService
+@inject ILinhaDeMontagemService linhaService
+@inject IComponentService componenteService
+@inject INotificationService notificationService
+@inject IJSRuntime js
+
+@if (isLoading || tipo == null)
+{
+    <div class="flex justify-center items-center h-screen">
+        <span>Loading...</span>
+    </div>
+    return;
+}
+
+@if(!authenticated || tipo != "Cliente")
+{
+    <Error403 />
+}else
+{
+<div class="bg-white min-h-screen flex-col flex overflow-hidden font-outfit">
+    <NavBarUtilizador />
+    
+    <div class="relative flex-auto flex items-center justify-center">
+        <div class="container">
+        @if (cart.GetCartProducts().Count != 0){
+            <h1 class="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black font-outfit text-custom_green xl:ml-10 2xl:ml-0">
+                O meu carrinho
+            </h1>
+        }
+            @if (cart.GetCartProducts().Count == 0)
+            {
+                <div class="flex flex-col items-center justify-center ">
+                    <img src="assets/empty-cart.png" alt="Carrinho vazio" class="w-1/2 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mb-6"/>
+                    <p class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-600 mb-4">
+                        O seu carrinho está vazio!
+                    </p>
+                    <button @onclick="ReturnToStart" 
+                        class="px-6 py-3 bg-custom_green/95 hover:bg-custom_green hover:shadow-lg hover:scale-105 text-white rounded-xl animate-bounce-slow font-extrabold text-lg sm:text-xl lg:text-2xl hover:bg-custom_green/90 shadow-lg">
+                        Explorar Produtos
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="flex flex-col lg:flex-row gap-10 2xl:ml-0 2xl:mr-0 xl:ml-5 xl:mr-5">
+                    <div class="flex-grow space-y-8">
+                        @foreach (var item in cart.GetCartProducts())
+                        {
+                            <div class="flex items-center gap-6 border-b-4 pb-4">
+                                <img src="@item.Imagem" alt="@item.Nome" class="xl:w-52 2xl:w-64 h-auto"/>
+                                <div class="flex-grow">
+                                    <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl text-custom_purple font-black mb-2">
+                                        @item.Nome
+                                    </h3>
+                                    <div class="flex items-center mt-4">
+                                        <span class="mr-4 font-bold text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl">Qtd:</span>
+                                        <div class="flex items-center border-4 border-custom_purple rounded-full bg-white px-2">
+                                            <button @onclick="() => DecrementQuantity(item.Nome)" class="text-custom_purple px-3 py-1">
+                                                <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                                    <rect width="21" height="21" fill="url(#pattern0_118_45)"/>
+                                                    <defs>
+                                                        <pattern id="pattern0_118_45" patternContentUnits="objectBoundingBox" width="1" height="1">
+                                                            <use xlink:href="#image0_118_45" transform="scale(0.0104167)"/>
+                                                        </pattern>
+                                                        <image id="image0_118_45" width="96" height="96" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAABlklEQVR4nO2XO04DURAEJ+EuwCkJkfgIjgPXMBcBh0YqZGkjEgLW6nnvVUmde6vdY2+ViIiIiIhIL+6qin/mPv0QK8vHEvLysYS8fGYugcUTh8UTh8UTh8UTh8UTh8UTh8UTh8UjIiIiIiISJ/1ixOovXmlBWEBeEi4gLwpP0JxpT1oQFpCXhAvIi8ITNGfakxaEBeQl4QLyovAEzZn2pAVhAXlJuIC8KDxBc6Y9aUFYQF4SLiAvCk/QnGlPWhAWkJeEC8iLwhM0Z9qTFoQF5CXhAvKi8ATNmfakBWEBeUm4gLwoPEFzpj1pQVhAXhIuIC8KT9CcaU9aEBaQl4QLyIvCEzRn2pMWhAXkJeEC8qLwBM2Z9qQFYQF5SbiAvCg8QXOmPWlBWEBeEi4gL4pVT9BXA0lcKJ81AB8NRHGhHGoAnhuI4kJ5qAG4rarvBrLYOaequq5BeG0gjJ1zXvYwXFXVewNp7JS37ZmG4vyBX7bpMmhO2zd/OPm/fxOetn8QxwZS+SPH7bM+VtVNWp6IiIiIiNR0/AAeMkVixp3W2QAAAABJRU5ErkJggg=="/>
+                                                    </defs>
+                                                </svg>
+                                            </button>
+                                            <span class="px-6 text-2xl">@GetProductQuantity(item.Nome)</span>
+                                            <button @onclick="() => IncrementQuantity(item.Nome)" class="text-custom_purple px-3 py-1">
+                                                <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                                    <rect width="21" height="21" fill="url(#pattern0_118_14)"/>
+                                                    <defs>
+                                                        <pattern id="pattern0_118_14" patternContentUnits="objectBoundingBox" width="1" height="1">
+                                                            <use xlink:href="#image0_118_14" transform="scale(0.0104167)"/>
+                                                        </pattern>
+                                                        <image id="image0_118_14" width="96" height="96" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAAD+ElEQVR4nO2dyY8NURSHP4TWvZG0YUFoO/a2QiSGCLrF+CeYQgj+BwtjY9EhFpY2ppVhadgZoxfiIWJYoLERFhy5ySUiWj39btU5t+p8yW/zesg95/fq1q07nALHcRzHcRzHcRxbzABWALuAk8B14AHQAkaAr1Ej8bPws2vxd3cCy4Hp2kHkRA8wAByLyfwOSIf6Hv/XUaAf6NYO0hrjgYXAEPApQcKL9Bk4B6wBJtBgJgPbgacVJH00hW5rW2xLo7qZfcBrxcT/qdCWvbFttSZc9s8MJFxG0UtgIzVkLnDZQIKlTV0E+qgJa+MwUTLTJ2AzGdMVh5OSuYZiLFkxFbhtIHmSSDeBXjJhZnzwkZppGJiDceYDLwwkS0rSixijSWYBzw0kSSoYqvZZ7POHDSRHKtLjOFFogq6a3XClTd2yMjo6YSAZoqRB7eRvMJAEUdZ6zemFjwYSIMr6oHVTvmQgeDE0d1T5/I520GJMYaa3EnqUx/tFaLXraVXLnfuVv2lFaLZtDyUTxr2v3ABGM+BN2VfBduVvmLTRRu32bS1z94LmArpkYkBY6B9XhgFLDAQnGRgQtLgMA84YCEwyMeB06uR3G3rqLUKMrCcnvRkPGAhKMjIgaHVKAywtrhchRnSIhFha4y1CjOguiZiRaJdy0wz4BkxLYcAKA8FIhgYELU1hwC4DgUimBuxIYcBJA4FIpgYkWbK8ZiAQydSAKykMeFhxArVJGev9FA1KvfhiHUmoMHnZMe/dAMZqwNsUBoRjoH4FMKYcfHED/h9zBngXhG4X5DdhdG/CPgxFdxjqD2LoPoj5VAS6UxE+GYfuZJxPR6M7HR3q7fiCDGNakAlHt5LgS5L8twF3SMjRDi7D1CpCjOggCek3EJBkZsCqlAb4xix0N2YFfGsibRtwihLwzbm0bcCisrantwz0rUVot+9JWdvTA35Ag0IDtlAifkSJwuJ/pVdgDNUFvQvirznYTUXHVDUrHxah1a5WlVV5Vxq42YkxJT0P0A5eqoBfyT+PAn2xUIU0XCOateTWGJuqlooVYl+HMoMGEiFKOoIBumJdTWmYbgCTMMKUuAVDGqJHFgu5Nqls5RyM0oTCrfPIoHRxHbujYWA2mdAb62pKjW64vWTGROBADZ4ThiyNdsZaZyLXFzhsoib0ZTZ3dMHySKfTqQsLVbfkH1PKSbeTWKQnVhd8ZSDhv4/tdzftLXtd8SVqmgv9rVhkz0QVdE0WxJpE7ypIeqj8dTbuXC5t90KudMeVpcPAvbjDuNOEf4u1ew7F/r1Rry3slGnAsnjQ4ThwNRrTiqc3f77O9n387F48FnQ8/s3SVDV7HMdxHMdxHMdxSMQP5LtLvELnuUUAAAAASUVORK5CYII="/>
+                                                    </defs>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-black mb-14">
+                                    @(item.Preco * GetProductQuantity(item.Nome))€
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="lg:w-1/3 xl:h-1/6 bg-white rounded-3xl xl:px-8 xl:py-2 2xl:p-8 [filter:drop-shadow(0px_0px_10px_rgba(0,0,0,0.25))]">
+                        <h2 class="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-black text-custom_purple mb-4">Detalhes da encomenda</h2>
+                        <form class="space-y-4">
+                            <div>
+                                <label class="block text-base xl:text-lg 2xl:text-xl font-bold ">Rua:</label>
+                                <input type="text" @bind="rua" placeholder="ex: Av. da Liberdade" 
+                                    class="w-full p-1 2xl:p-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"/>
+                                        @if (!string.IsNullOrWhiteSpace(ruaError))
+                                        {
+                                            <p class="text-red-500 text-sm mt-1">@ruaError</p>
+                                        }
+                            </div>
+                            <div>
+                                <label class="block text-base xl:text-lg 2xl:text-xl  font-bold ">Cidade:</label>
+                                <input type="text" @bind="cidade" placeholder="ex: Braga" 
+                                    class="w-full p-1 2xl:p-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"/>
+                                    @if (!string.IsNullOrWhiteSpace(cidadeError))
+                                    {
+                                        <p class="text-red-500 text-sm mt-1">@cidadeError</p>
+                                    }
+                            </div>
+                            <div>
+                                <label class="block text-base xl:text-lg 2xl:text-xl  font-bold ">Porta:</label>
+                                <input type="text" @bind="porta" placeholder="ex: 262" 
+                                    class="w-full p-1 2xl:p-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"/>
+                                        @if (!string.IsNullOrWhiteSpace(portaError))
+                                        {
+                                            <p class="text-red-500 text-sm mt-1">@portaError</p>
+                                        }
+                            </div>
+                            <div>
+                                <label class="block text-base xl:text-lg 2xl:text-xl  font-bold ">CP:</label>
+                                <input type="text" @bind="codigoPostal" placeholder="ex: 4700-000" 
+                                    class="w-full p-1 2xl:p-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"/>
+                                        @if (!string.IsNullOrWhiteSpace(codigoPostalError))
+                                        {
+                                            <p class="text-red-500 text-sm mt-1">@codigoPostalError</p>
+                                        }
+                            </div>
+
+                            <div class="flex gap-4">
+                                <button type="button" @onclick="ClearForm" 
+                                    class="px-6 2xl:py-2 py-1 border-2 border-red-600 rounded-full hover:bg-red-100/50">
+                                    Apagar
+                                </button>
+                                <button type="button" @onclick="ApplyForm" 
+                                    class="px-6 py-2 bg-white border-2 border-green-700 rounded-full hover:bg-green-100/50">
+                                    @applyButtonText
+                                </button>
+                            </div>
+
+                        <p class="text-xs 2xl:text-sm text-gray-600 mt-4">
+                            Após conclusão da encomenda, consulte os detalhes da mesma na aba "encomendas"
+                        </p>
+                        <p class="text-xs 2xl:text-sm text-gray-700 mt-10">
+                            <span class="font-bold">Nota:</span> Consulte as notificações no perfil, para receber atualizações relativas à sua encomenda
+                        </p>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-8 border-t">
+                    <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-black text-gray-800">Total:</span>
+                    <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-black text-custom_purple">@(CalculateTotal())€</span>
+                </div>
+
+                <div class="flex justify-end gap-4 mt-8 mb-4 xl:mr-4 2xl:mr-0">
+                    <button @onclick="ReturnToStart" 
+                        class="px-8 py-3 border-2 border-custom_green text-custom_green rounded-lg font-black text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl hover:bg-green-200/5 hover:shadow-lg hover:scale-105 transition-all duration-500 ease-in-out">
+                        Voltar ao início
+                    </button>
+                    <button @onclick="FinishOrder" 
+                        class="px-8 py-3 bg-custom_green/95 text-white rounded-lg font-black text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl hover:bg-custom_green hover:shadow-lg hover:scale-105 transition-all duration-500 ease-in-out">
+                        Concluir encomenda
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+    @if (modalSucesso || modalErro)
+    {
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 font-outfit">
+            <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+                <div class="flex flex-col items-center">
+                    @if (modalSucesso)
+                    {
+                        <div class="mb-4">
+                            <svg class="w-16 h-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-gray-900 mb-4">Encomenda Confirmada!</h3>
+                        <div class="w-full space-y-3">
+                            <p class="text-gray-600 text-base font-medium"><span class="text-lg font-bold">Número da Encomenda:</span> @orderId</p>
+                            <p class="text-gray-600 text-base font-medium"><span class="text-lg font-bold">Morada de Entrega:</span></p>
+                            <p class="text-gray-600 pl-4 text-base font-medium">@rua, @porta</p>
+                            <p class="text-gray-600 pl-4 text-base font-medium">@codigoPostal @cidade</p>
+                            <p class="text-gray-600 text-base font-medium"><span class="text-lg font-bold">Total:</span> @orderTotal€</p>
+                        </div>
+                        <div class="mt-6">
+                            <button @onclick="ConfirmOrder" 
+                                    class="py-3 px-8 bg-custom_green text-white rounded-2xl font-bold text-xl hover:bg-custom_dark_green/80 hover:scale-105 duration-500 transition-all ease-in-out">
+                                Continuar
+                            </button>
+                        </div>
+                    }
+                    @if (modalErro)
+                    {
+                        <div class="mb-4">
+                            <svg class="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-gray-900 mb-4">Erro na Encomenda</h3>
+                        <p class="text-gray-600 text-center text-base font-medium">Não foi possível concluir a encomenda, por favor tente mais tarde!</p>
+                        <div class="mt-6">
+                            <button @onclick="CloseModal" 
+                                    class="py-3 px-8 bg-red-600 text-white rounded-2xl font-bold text-xl hover:bg-red-800/80 hover:scale-105 duration-500 transition-all ease-in-ou">
+                                Fechar
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+}   
+
+@code {
+    private bool isLoading = true;
+     private bool authenticated = false;
+    private bool modalSucesso = false;
+    private bool modalErro = false;
+    private string orderTotal = "0.00";
+    private int orderId = 0;
+    private string rua = "";
+    private string cidade = "";
+    private string porta = "";
+    private string codigoPostal = "";
+    private string NIF = ""; 
+
+    private string tipo = "";
+
+    private string ruaError = "";
+    private string cidadeError = "";
+    private string portaError = "";
+    private string codigoPostalError = "";
+
+    private List<ComponentModel> stock = new List<ComponentModel>();
+
+    private void ShowSuccessModal()
+    {
+        modalSucesso = true;
+        modalErro = false;
+    }
+
+    private void ShowErrorModal()
+    {
+        modalErro = true;
+        modalSucesso = false;
+    }
+
+    private void CloseModal()
+    {
+        modalSucesso = false;
+        modalErro = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider) AuthProvider;
+        authenticated = await auth.IsAuthenticated();
+        var role = await auth.GetTipo();
+
+        if(role != null)
+        {
+            if(role == "Cliente"){
+                tipo = role;
+
+                string email = await auth.GetEmail();
+                var user = await db.GetUser(email);
+
+                var cliente = await db.GetCliente(user.UserId);
+                NIF = cliente.NIF;
+            }
+        }
+        isLoading = false;
+        if(authenticated){
+            stock = await componenteService.GetComponentes();
+        }
+    }
+
+    private void IncrementQuantity(string nome)
+    {
+        cart.AddToCart(cart.GetCartProducts().FirstOrDefault(p => p.Nome == nome));
+    }
+
+    private void DecrementQuantity(string nome)
+    {
+        var product = cart.GetCartProducts().FirstOrDefault(p => p.Nome == nome);
+        if (product != null && GetProductQuantity(nome) > 0)
+        {
+            cart.RemoveFromCart(nome);
+        }
+    }
+
+    private int GetProductQuantity(string nome)
+    {
+        return cart.GetProductQuantity(nome);
+    }
+
+    private string CalculateTotal()
+    {
+        decimal total = cart.GetCartProducts().Sum(p => p.Preco * GetProductQuantity(p.Nome));
+        return total.ToString("0.00");
+    }
+
+    private void ClearForm()
+    {
+        rua = "";
+        cidade = "";
+        porta = "";
+        codigoPostal = "";
+        applyButtonText = "Aplicar";
+    }
+
+    private string applyButtonText = "Aplicar";
+    private void ApplyForm()
+    {
+        bool isValid = true;
+
+        // Validar Rua
+        if (string.IsNullOrWhiteSpace(rua))
+        {
+            ruaError = "Por favor, insira a rua.";
+            isValid = false;
+        }
+        else
+        {
+            ruaError = "";
+        }
+
+        // Validar Cidade
+        if (string.IsNullOrWhiteSpace(cidade))
+        {
+            cidadeError = "Por favor, insira a cidade.";
+            isValid = false;
+        }
+        else
+        {
+            cidadeError = "";
+        }
+
+        // Validar Porta
+        if (string.IsNullOrWhiteSpace(porta) || !int.TryParse(porta, out _))
+        {
+            portaError = "Por favor, insira um número de porta válido.";
+            isValid = false;
+        }
+        else
+        {
+            portaError = "";
+        }
+
+        // Validar Código Postal
+        if (string.IsNullOrWhiteSpace(codigoPostal) || !Regex.IsMatch(codigoPostal, @"^\d{4}-\d{3}$"))
+        {
+            codigoPostalError = "Por favor, insira um código postal válido (ex: 4700-000).";
+            isValid = false;
+        }
+        else
+        {
+            codigoPostalError = "";
+        }
+
+        if (isValid)
+        {
+            applyButtonText = "✔️";
+        }
+    }
+
+    private void ReturnToStart()
+    {
+        NavManager.NavigateTo("/destaques");
+    }
+
+    private async Task FinishOrder()
+    {
+        if (string.IsNullOrWhiteSpace(rua) || string.IsNullOrWhiteSpace(codigoPostal) || string.IsNullOrWhiteSpace(porta))
+        {
+            await js.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        try
+        {
+            int portaNumero;
+            if (!int.TryParse(porta, out portaNumero))
+            {
+                await js.InvokeVoidAsync("alert", "A porta deve ser um número válido.");
+                return;
+            }
+            
+            orderId = await orderService.CreateOrder(rua, codigoPostal, portaNumero, NIF);
+            orderTotal = CalculateTotal();
+
+            List<ProductModel> produtosEncomenda = new List<ProductModel>();
+            List<ComponentModel> componentes = new();
+
+            foreach (var produto in cart.GetCartProducts())
+            {
+                int i = cart.GetProductQuantity(produto.Nome);
+                while(i > 0)
+                {
+                    await productService.CreateProduct(produto.Nome, orderId);
+                    i--;
+                }
+                produtosEncomenda.Add(produto);
+            }
+
+            var produtosAux = await productService.GetProductsByOrderId(orderId);
+
+            foreach (var produtoEncomenda in produtosAux){
+                componentes = await componenteService.GetComponentesParaMontagem(produtoEncomenda.Preco == 15 ? 1 : 2);
+                produtoEncomenda.Componentes = componentes;
+            }
+
+            bool? flag = await UpdateStockAndCreateLines(produtosAux);
+
+            if(flag.HasValue)
+            {
+                if(flag == false)
+                {
+                    foreach(var p in produtosAux)
+                    {
+                        await productService.DeleteProduct(p.Id);
+                    }
+                    await orderService.DeleteOrder(orderId);
+                    ShowErrorModal();
+                    StateHasChanged();
+                    return;
+                }
+            }
+
+            ShowSuccessModal();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await js.InvokeVoidAsync("alert", $"Erro ao criar a encomenda: {ex.Message}");
+            return;
+        }
+    }
+
+    private void ConfirmOrder()
+    {
+        cart.ClearCart();
+        ClearForm();
+        CloseModal();
+        NavManager.NavigateTo("/encomendas");
+    }
+
+    public async Task<bool> UpdateStockAndCreateLines(List<ProductModel> produtos){
+        foreach(var produto in produtos){
+            List<ComponentModel> componentProduto = produto.Componentes;
+            foreach(var componente in componentProduto){
+                var stockComponente = stock.FirstOrDefault(s => s.Id == componente.Id);
+
+                if(stockComponente != null){
+                    stockComponente.Quantidade -= componente.Quantidade;
+
+                    if (stockComponente.Quantidade < 0){
+                        var newNotification = new NotificationModel{
+                            Titulo = "Falta de Stock",
+                            Descricao = $"Alguém tentou fazer uma encomenda e não havia stock suficiente do componente {stockComponente.Nome}!"
+                        };
+                        await notificationService.CreateNotificationForAdmin(newNotification);
+                        return false;
+                    }
+                    else if(stockComponente.Quantidade == 0)
+                    {
+                        var newNotification = new NotificationModel{
+                            Titulo = "Rutura de Stock",
+                            Descricao = $"O stock do componente {stockComponente.Nome} acabou!"
+                        };
+                        await notificationService.CreateNotificationForAdmin(newNotification);
+                    }
+                }
+            } 
+        }
+        foreach(var p in produtos)
+        {
+            var c = p.Componentes;
+            foreach(var co in c)
+            {
+                var stockComponente = stock.FirstOrDefault(s => s.Id == co.Id);
+                await componenteService.UpdateComponentQuantity(stockComponente.Id,stockComponente.Quantidade);
+            }
+            await linhaService.CreateLinhaDeMontagem(p.Id,p.Componentes.Count());
+        }
+        return true;
+    }
+}

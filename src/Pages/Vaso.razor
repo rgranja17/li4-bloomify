@@ -1,0 +1,236 @@
+@page "/{NomeProduto}"
+@using Bloomify.Shared
+
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager NavManager
+@inject ICartService cartService
+@inject IProductService db
+
+<PageTitle>Vaso Standard - Bloomify</PageTitle>
+
+<div class="bg-white min-h-screen flex-col flex overflow-hidden font-outfit">
+    @if(tipo == "Admin" || tipo == "Funcionario")
+        {
+            <Error403 />
+        }
+    else 
+        {
+    @if(isLogged)
+        {
+            <NavBarUtilizador />
+        } 
+    else 
+        {
+            <NavBar />
+        }
+    
+    <div class="relative flex-auto flex items-center justify-center ">
+
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <svg viewBox="0 0 1280 672" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
+                <g filter="url(#filter0_f_32_4)">
+                    <path d="M567.097 1641.67C1087.23 1781.04 1602.84 1543.37 1718.74 1110.82C1834.65 678.269 1506.95 214.636 986.815 75.2658C466.679 -64.1041 -48.9306 173.566 -164.832 606.118C-280.734 1038.67 46.962 1502.3 567.097 1641.67Z" fill="url(#paint0_linear_32_4)"/>
+                </g>
+                <defs>
+                    <filter id="filter0_f_32_4" x="-223.138" y="0.393372" width="2000.19" height="1716.15" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                        <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                        <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_32_4"/>
+                    </filter>
+                    <linearGradient id="paint0_linear_32_4" x1="777" y1="100" x2="777" y2="1000" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#3F784C" stop-opacity="0"/>
+                        <stop offset="50%" stop-color="#3F784C" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#3F784C" stop-opacity="0.95"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <div class="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+            <div class="bg-white rounded-3xl shadow-lg sm:shadow-2xl [filter:drop-shadow(0px_0px_10px_rgba(0,0,0,0.20))] sm:[filter:drop-shadow(0px_0px_20px_rgba(0,0,0,0.30))]">
+                <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+                    <div class="lg:w-1/2 flex h-full justify-center items-center">
+                        <div class="w-full relative bg-gray-50 rounded-2xl sm:[filter:drop-shadow(4px_0px_4px_rgba(0,0,0,0.30))]">
+                            <div class="flex justify-center items-center sm:p-8 @(produto.Id == 2 ? "mt-6 mb-10" : "" )">
+                                <img src="@produto.Imagem" alt="Vaso Standard" class="w-auto h-auto" />
+                            </div>
+
+                            
+                            <div class="w-full h-full space-y-2 sm:space-y-3 bg-gradient-to-b from-gray-50 via-gray/50 to-custom_green/50 rounded-2xl px-3 sm:px-6 py-[10px] ">
+                                @if(produto.Id == 1){
+                                    <div class="flex items-start gap-2">
+                                        <span class="text-blue-500 text-lg sm:text-xl">💧</span>
+                                        <p class="text-profile_green font-semibold text-base sm:text-lg">
+                                            Menos desperdício de água: sistema eficiente que utiliza apenas a quantidade necessária.
+                                        </p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <span class="text-gray-500 text-lg sm:text-xl">⏰</span>
+                                        <p class="text-profile_green font-semibold text-base sm:text-lg">
+                                            Menor frequência de rega: poupe tempo e esforço.
+                                        </p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <span class="text-green-500 text-lg sm:text-xl">🌱</span>
+                                        <p class="text-profile_green font-semibold text-base sm:text-lg">
+                                            Perfeito para espaços pequenos: design compacto e versátil.
+                                        </p>
+                                    </div>
+                                } else{
+                                    <div class="flex items-start gap-2 mt-8">
+                                        <span class="text-blue-500 text-lg sm:text-xl">📱</span>
+                                        <p class="text-profile_green font-semibold text-base sm:text-lg ml-2">
+                                            Controlo por Bluetooth: ajuste e monitorize a rega através do seu smartphone.
+                                        </p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <span class="text-gray-500 text-lg sm:text-xl">✨</span>
+                                        <p class="text-profile_green font-semibold text-base sm:text-lg">
+                                            Maior capacidade: ideal para plantas de médio porte.
+                                        </p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <span class="text-green-500 text-lg sm:text-xl">🏡</span>
+                                        <p class="text-profile_green font-semibold text-base sm:text-lg">
+                                            Design sofisticado: eleva a decoração de qualquer espaço.
+                                        </p>
+                                    </div>
+                                }                            
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:w-1/2 p-2 sm:p-4">
+                        <div class="flex justify-end items-end">
+                            <h1 class="text-4xl sm:text-5xl lg:text-7xl font-black text-custom_purple">@produto.Nome</h1>
+                        </div>
+                        <div class="flex justify-end items-end text-3xl sm:text-4xl lg:text-5xl font-black text-custom_purple mb-2">@produto.Preco.ToString("C")</div>
+                        
+                        <div class="mb-2">
+                            <h2 class="text-xl sm:text-xl font-bold text-profile_green">
+                                @if(produto.Id == 1){
+                                    <span >🌱</span>
+                                } else{
+                                    <span>🌟</span>
+                                }
+                                @produto.Titulo
+                            </h2>
+                            <p class="text-profile_green font-medium text-sm sm:text-base px-2">
+                                    @produto.Descricao
+                            </p>
+                        </div>
+
+                        <div class="w-full sm:w-625 h-1 sm:h-2 bg-custom_purple rounded-2xl my-4"></div>
+
+                        <div class="mb-6 sm:mb-8 px-2">
+                            <h3 class="text-xl sm:text-2xl font-bold text-profile_green mb-4 sm:mb-6">💬 O que os clientes dizem</h3>
+                            <div class="space-y-4 sm:space-y-6">
+                                @if(produto.Id == 1){
+                                    <div class="bg-custom_gray/80 rounded-2xl border-gray-600 border p-2 sm:border-2">
+                                        <div class="font-semibold text-profile_green">🙍🏻‍♀️ Ana Jorge</div>
+                                        <p class="text-gray-700 text-xs sm:text-sm">
+                                            "Adorei o Vaso Autoirrigável Standard! Tenho uma rotina muito agitada, e agora não preciso preocupar-me tanto com a rega das plantas. É simples, prático e ajuda-me a economizar água. Recomendo!"
+                                        </p>
+                                    </div>
+                                    <div class="bg-custom_gray/80 rounded-2xl border-gray-600 border p-2 sm:border-2">
+                                        <div class="font-medium text-profile_green">🙍🏻‍♂️ Francisco Jorge</div>
+                                        <p class="text-gray-600 text-xs sm:text-sm">
+                                            "Este vaso é o meu aliado perfeito. Como trabalho muitas horas fora de casa, agora sei que as minhas plantas estão sempre bem hidratadas, mesmo quando não posso regá-las."
+                                        </p>
+                                    </div>
+                                } else{
+                                    <div class="bg-custom_gray/80 rounded-2xl border-gray-600 border p-2 sm:border-2">
+                                        <div class="font-semibold text-profile_green">🙍🏻‍♀️ Carla Castro</div>
+                                        <p class="text-gray-700 text-xs sm:text-sm">
+                                            ""A funcionalidade de controlo por Bluetooth é incrível! Posso ajustar a rega do meu vaso diretamente no telemóvel, mesmo quando não estou em casa. Vale cada cêntimo!""
+                                        </p>
+                                    </div>
+                                    <div class="bg-custom_gray/80 rounded-2xl border-gray-600 border p-2 sm:border-2">
+                                        <div class="font-medium text-profile_green">🙍🏻‍♂️ Francisco Amilcar</div>
+                                        <p class="text-gray-600 text-xs sm:text-sm">
+                                            ""O acabamento premium realmente faz diferença. Uso o Vaso Deluxe na sala, e além de manter as minhas plantas impecáveis, ele transforma completamente o ambiente. Excelente produto!""
+                                        </p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end items-end">
+                            <button @onclick="@(isLogged ? AddToCart : null)" 
+                                    class="w-full sm:w-2/4 @(isLogged ? "bg-custom_purple/95 hover:bg-custom_purple hover:shadow-lg hover:scale-105" : "bg-custom_gray cursor-not-allowed") text-white py-2 sm:py-3 px-4 sm:px-6 rounded-2xl font-black text-2xl sm:text-3xl lg:text-4xl transition-all duration-500 ease-in-out flex items-center justify-center gap-2"
+                                    disabled="@(isLogged ? false : true)">
+
+                                <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                    <rect width="50" height="50" fill="url(#pattern0_125_127)"/>
+                                    <defs>
+                                        <pattern id="pattern0_125_127" patternContentUnits="objectBoundingBox" width="1" height="1">
+                                            <use xlink:href="#image0_125_127" transform="scale(0.0104167)"/>
+                                        </pattern>
+                                        <image id="image0_125_127" width="96" height="96" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAAB90lEQVR4nO3dQW7TQBxGcS+AXYrUSxRULlNFvRVtEYKrwAZOEZCqLssJoN2l0kMWRrIRMgtifzOd95O6/Y9nnu1mlXSdJEmSJIUBL4FL4Atwz//rZ+yAC+BFen/FAp4CV8Ce5eyHEE/S+y3x8D+yng9GmAa4Yn0XuVuuvHf+PhCgX/Okax2Zu/+3113r+PVpJ2XXtQ64Cwb40bWOfyh9fvUwgAGahk+AAZqGT4ABmoZPwGEPrHXd0tIbLJ0BwgwQZoAwA4QZIMwAYbUGuAW2wGb4OwOuK5pfdYBb4Pgv6xwD3yqYX32A7cxa5xXMn1js4EcXfWibmbWOKpg/sdjBjy760DYzaz2vYP7EYgc/uuhDO5tZa1vB/InFDn500Yd2PfNP8qaC+dUHYPg0cj68k4+GO/OmovnVB3g0DBBmgDADhBkgzABhBggzQJgBwgwQZoAwA4QZIMwAYQYIM0CYAcIMEGaAMAOEGSDMAGEGCDNAmAHCDBBmgDADhBkgzABhBggzQJgBwgwQZoAwAzQQIPll26X7vkaAr+ldFmz5r8MH3qR3WbDlfxYFeAU8pHdaoP5MThcPMER4n95tgd6ucvhDgGfA5/SOC/KpP5PVAowivGv8dfTQ3/mrH/4fIU6Hnx7cNfIR9W7Y6+Vq73xJkiRJkiR1j8FPbT+AdeMY4K8AAAAASUVORK5CYII="/>
+                                    </defs>
+                                </svg>
+                                @(isLogged ? "Adicionar" : "Indisponível")
+                            </button>
+                        </div>
+
+                        @if (showSuccessMessage)
+                        {
+                            <div class="fixed top-4 right-4 bg-green-100 text-custom_green font-bold px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 transition-all duration-500 ease-in-out">
+                                Produto adicionado ao carrinho com sucesso!
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+</div>
+
+@code{
+    [Parameter]
+    public string NomeProduto { get; set; } // Recolher qual vaso é
+
+    private bool showSuccessMessage = false;
+    private string tipo = "";
+    private bool isLogged = false;
+    private ProductModel produto = new ProductModel();
+
+    private async Task AddToCart()
+    {
+        cartService.AddToCart(produto);
+        
+        // Exibir a mensagem
+        showSuccessMessage = true;
+
+        // Ocultar a mensagem após 3 segundos
+        await Task.Delay(3000);
+        showSuccessMessage = false;
+    }
+
+    private async Task CarregarProduto()
+    {
+        if(NomeProduto == "vaso-standard"){
+            produto = await db.GetProductByName("Vaso Standard");
+        } else if (NomeProduto == "vaso-deluxe"){
+            produto = await db.GetProductByName("Vaso Deluxe");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string? role = await auth.GetTipo();
+        isLogged = await auth.IsAuthenticated();
+
+        if(role != null){
+            tipo = role;
+        }
+
+        await CarregarProduto();
+    }
+}

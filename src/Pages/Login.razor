@@ -1,0 +1,164 @@
+@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using BCrypt.Net
+
+@inject IJSRuntime js
+@inject NavigationManager NavManager
+@inject IUserService db
+@inject AuthenticationStateProvider AuthProvider
+
+<PageTitle>Iniciar Sessão - Bloomify</PageTitle>
+
+<div class="w-full min-h-screen flex items-center justify-center p-4 relative">
+    <div class="absolute inset-0 w-full h-full z-0">
+        <img src="assets/authBg.png" alt="Background" class="w-full h-full object-cover">
+    </div>
+    <div class="relative bg-custom_gray rounded-3xl h-auto w-full md:w-3/4 lg:w-5/12 2xl:w-1/4 min-h-[600px] lg:min-h-[520px] shadow-lg flex flex-col">
+        <!-- Cabeçalho -->
+        <div class="flex flex-col items-center mb-6">
+            <a href="/">
+                <img onclick="NavigateToStart" src="assets/icon.png" alt="Bloomify Logo" class="w-auto h-28 md:h-32 lg:h-28 xl:h-32 mt-4">
+            </a>
+            <h1 class="text-custom_green text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-outfit font-bold">Iniciar Sessão</h1>
+        </div>
+
+        <!-- Formulário -->
+        <EditForm Model="@loginModel" OnValidSubmit="() => Authenticate()" class="space-y-6 w-full max-w-sm mx-auto flex-grow px-8 xl:px-0">
+            <DataAnnotationsValidator />
+
+            <!-- Campo de Email -->
+            <div>
+                <label for="email" class="block font-outfit font-bold text-gray-500 text-sm">Email</label>
+                <InputText id="email" 
+                            @bind-Value="loginModel.Email" 
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" 
+                            placeholder="email@dominio.com" />
+                <ValidationMessage For="@(() => loginModel.Email)" class="text-red-500 text-xs mt-1" />
+            </div>
+
+            <!-- Campo de Password -->
+            <div>
+                <label for="password" class="block font-outfit font-bold text-gray-500 text-sm">Password</label>
+                <div class="relative">
+                    <InputText id="password" 
+                            type="@(showPassword ? "text" : "password")"
+                            @bind-Value="loginModel.Password" 
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+                            placeholder="••••••••••" />
+                    <button type="button" 
+                            @onclick="TogglePasswordVisibility" 
+                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-gray-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="@(showPassword ? "M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" : "M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z")" />
+                        </svg>
+                    </button>
+                </div>
+                <ValidationMessage For="@(() => loginModel.Password)" class="text-red-500 text-xs mt-1" />
+            </div>
+
+            <!-- Botão de Submissão -->
+            <button type="submit" 
+                    disabled="@isLoading"
+                    class="w-full bg-custom_green font-outfit font-extrabold text-xl text-white py-3 rounded-full
+                        @(isLoading ? "cursor-not-allowed" : "hover:bg-custom_gray hover:border-custom_green hover:ring-4 hover:ring-custom_green hover:text-custom_green hover:shadow-lg hover:scale-105")
+                        transition-all duration-500 ease-in-out flex items-center justify-center space-x-2">
+                @if (isLoading)
+                {
+                    @if (loginSuccess)
+                    {
+                        <svg class="w-8 h-8 text-white animate-[scale-in_0.3s_ease-out]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    }
+                    else
+                    {
+                        <div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    }
+                }
+                else
+                {
+                    <span>Confirmar</span>
+                }
+            </button>
+
+            <!-- Link para Registro -->
+            <div class="text-center font-bold text-gray-500 text-sm font-outfit mt-4">
+                Não tem conta? 
+                <a href="/register" class="text-custom_green underline transition-colors">Registe-se!</a>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private bool showPassword = false;
+    private bool isLoading = false;
+    private bool loginSuccess = false;
+
+    private void NavigateToStart()
+    {
+        NavManager.NavigateTo("/");
+    }
+
+    private async Task Authenticate()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var account = await db.GetUser(loginModel.Email);
+        
+        if (account == null || !BCrypt.Verify(loginModel.Password, account.PasswordHash))
+        {
+            isLoading = false;
+            StateHasChanged();
+            await js.InvokeVoidAsync("alert", "Email ou password incorretos.");
+            return;
+        }
+
+        // Play success sound
+        await js.InvokeVoidAsync("eval", @"
+            const audio = new Audio('assets/success-sound.wav');
+            audio.volume = 0.25;
+            audio.play();
+        ");
+
+        loginSuccess = true;
+        StateHasChanged();
+
+        var ourProvider = (AuthProvider)AuthProvider;
+        await ourProvider.UpdateAuthenticationState(new UserSession
+        {
+            Nome = account.Nome,
+            Email = account.Email,
+            Tipo = account.TipoString,
+        });
+
+        await Task.Delay(1400);
+
+        if(account.TipoString == "Admin")
+        {
+            NavManager.NavigateTo("/painelAdmin", true);
+        }else if(account.TipoString == "Funcionario")
+        {
+            NavManager.NavigateTo("/encomendas", true);
+        }else 
+            NavManager.NavigateTo("/destaques", true);
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private class LoginModel
+    {
+        [Required(ErrorMessage = "O email é obrigatório")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "A password é obrigatória")]
+        public string Password { get; set; }
+    }
+}

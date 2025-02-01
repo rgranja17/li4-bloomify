@@ -1,0 +1,65 @@
+@using Bloomify.Shared
+@inject NavigationManager NavManager
+
+<div class="w-full h-auto bg-custom_gray rounded-3xl py-2 px-4">
+    <h1 class="text-black text-xl md:text-2xl lg:text-3xl font-outfit font-black mb-2 sm:mb-0">
+        Encomenda @Order.Id
+    </h1>
+    
+    <!-- Container flex que se torna coluna em telas menores -->
+    <div class="relative flex flex-wrap items-center space-x-4 text-lg sm:text-xl md:text-2xl font-outfit text-black py-8 md:py-6">
+        <!-- Progress Icon and Percentage -->
+            <div class="w-10 h-4 bg-gray-200 rounded-lg overflow-hidden border-custom_green border-2">
+                <div class="h-full bg-custom_green" style="width: @(Percentage)%"></div>
+            </div>
+            <div class="flex items-center">
+                <span class="text-2xl font-bold">@Percentage</span>
+                <span class="text-2xl font-medium">%</span>
+            </div>
+
+        <!-- Order State -->
+        <div class="flex items-center space-x-2">
+            <div class="w-6 h-6 rounded-full border-2 border-custom_green flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="8" fill="#3F784C" />
+                </svg>
+            </div>
+            <span class="font-medium">@OrderState</span>
+        </div>
+
+        <!-- Calendar Icon and Date -->
+        <div class="flex items-center space-x-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 lg:h-10 lg:w-10 text-custom_green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="font-medium text-md">@Order.DataEntrega.ToString("dd/MM/yyyy") (est)</span>
+        </div>
+
+        <!-- Details Button -->
+        <button @onclick="NavigateToDetails" 
+                class="absolute bottom-0 right-0 bg-custom_purple rounded-3xl px-8 text-white font-outfit font-bold">
+            Detalhes
+        </button>
+    </div>
+
+</div>
+
+@code {
+    [Parameter]
+    public OrderModel Order { get; set; } = new();
+
+    [Parameter]
+    public int Percentage { get; set; }
+
+    [Parameter]
+    public string OrderState { get; set; } = "Desconhecido";
+
+    private void NavigateToDetails()
+    {
+        if (Order != null && Order.Id > 0)
+            NavManager.NavigateTo(
+                $"/encomenda/{Order.Id}/{Percentage}/{Uri.EscapeDataString(OrderState)}/{Order.DataEntrega:yyyy-MM-dd}"
+            );
+    }
+}

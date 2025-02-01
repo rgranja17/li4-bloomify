@@ -1,0 +1,203 @@
+@page "/paineladmin/linhas/{idLinha:int}/etapa-{etapaNum:int}"
+@using Bloomify.Shared
+
+@inject AuthenticationStateProvider AuthProvider
+@inject ILinhaDeMontagemService db
+@inject IEtapaService dbAux
+
+@if (tipo == null)
+{
+    <!-- Exibe um carregando enquanto o tipo não for obtido -->
+    <div class="flex justify-center items-center h-screen">
+        <span>Loading...</span>
+    </div>
+}
+
+@if(tipo != "Admin")
+{
+    <Error403 />
+}else
+{
+<div class="bg-white min-h-screen flex-col flex overflow-hidden">
+    <NavBarUtilizador/>
+    
+    <div class="relative flex-auto flex items-center justify-center">
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <svg viewBox="0 0 1280 672" fill="none" xmlns="http://www.w3.org/2000/svg" 
+                class="w-full h-full object-cover">
+                <g filter="url(#filter0_f_32_4)">
+                    <path d="M567.097 1641.67C1087.23 1781.04 1602.84 1543.37 1718.74 1110.82C1834.65 678.269 1506.95 214.636 986.815 75.2658C466.679 -64.1041 -48.9306 173.566 -164.832 606.118C-280.734 1038.67 46.962 1502.3 567.097 1641.67Z" fill="url(#paint0_linear_32_4)"/>
+                </g>
+                <defs>
+                    <filter id="filter0_f_32_4" x="-223.138" y="0.393372" width="2000.19" height="1716.15" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                        <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                        <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_32_4"/>
+                    </filter>
+                    <linearGradient id="paint0_linear_32_4" x1="777" y1="100" x2="777" y2="1000" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#3F784C" stop-opacity="0"/>
+                        <stop offset="50%" stop-color="#3F784C" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#3F784C" stop-opacity="0.95"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <div class="container flex flex-col mx-auto px-4 sm:px-6 lg:px-8 items-center justify-center">
+
+            <div class="w-11/12 xl:w-full mb-6">
+                <div class="bg-white rounded-3xl shadow-2xl py-3 px-4 sm:px-6 lg:px-8 [filter:drop-shadow(0px_0px_20px_rgba(0,0,0,0.20))]">
+
+                    <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black font-outfit text-custom_purple mb-6">
+                        Menu de edição - etapa @etapaNum
+                    </h1>
+                    
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 2xl:gap-20 w-full max-w-7xl">
+                        <div class="flex flex-col h-full justify-between">
+                            <div>
+                                <div class="flex flex-col">
+                                    <label class="block text-lg xl:text-xl 2xl:text-2xl font-extrabold mb-1">Imagem:</label>
+                                    <div class="relative w-full border border-gray-300 rounded-lg bg-gray-100 p-4 flex items-center justify-center">
+                                        <img src="@etapaEditar.Imagem" alt="@etapaEditar.Id" 
+                                            class="max-h-64 xl:max-h-72 2xl:max-h-80 object-contain" />
+                                        <button type="button" 
+                                            class="absolute top-2 right-2 p-2 bg-custom_purple/95 text-white rounded-full shadow-md hover:bg-custom_purple focus:outline-none focus:ring-2 focus:ring-custom_purple/15 transition">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 xl:w-6 xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col h-full">
+                            <div class="flex-grow">
+                                <div class="flex flex-col mb-4">
+                                    <label class="block text-lg xl:text-xl 2xl:text-2xl font-extrabold mb-1">Instrução:</label>
+                                    <input type="text" 
+                                        @bind="newInstrucao"
+                                        class="w-full p-2 xl:p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-800 text-base xl:text-lg 2xl:text-xl font-medium focus:outline-none focus:ring-2 focus:ring-custom_green focus:border-custom_green transition" 
+                                        placeholder="Instrução" />
+                                </div>
+
+                                <div class="flex flex-col">
+                                    <label class="block text-lg xl:text-xl 2xl:text-2xl font-extrabold mb-1">Descrição:</label>
+                                    <textarea
+                                        @bind="newDescription"  
+                                        class="w-full p-2 xl:p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-800 text-base xl:text-lg 2xl:text-xl font-medium focus:outline-none focus:ring-2 focus:ring-custom_green focus:border-custom_green transition resize-none h-32 xl:h-40 2xl:h-48"
+                                        placeholder="Descrição do Vaso">@etapaEditar.Descricao
+                                    </textarea>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end gap-4 mt-6">
+                                <button @onclick="NavigateBack" class="px-6 py-2 xl:px-8 xl:py-3 border-2 border-custom_purple text-custom_purple rounded-lg font-black text-sm sm:text-base xl:text-lg 2xl:text-xl hover:bg-purple-200/5 hover:shadow-lg hover:scale-105 transition-all duration-500 ease-in-out">
+                                    Cancelar
+                                </button>
+                                <button @onclick="ApplyChanges" class="px-6 py-2 xl:px-8 xl:py-3 bg-custom_purple/95 text-white rounded-lg font-black text-sm sm:text-base xl:text-lg 2xl:text-xl hover:bg-custom_purple hover:shadow-lg hover:scale-105 transition-all duration-500 ease-in-out">
+                                    Aplicar alterações
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@* Modal de Confirmação *@
+@if (showModal)
+{
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm ">
+            <div class="flex justify-center mb-4">
+                <img src="assets/checkmark.gif" alt="Sucesso"/>
+            </div>
+
+            <h2 class="text-2xl font-bold text-center text-custom_purple mb-4">Alterações Aplicadas!</h2>
+
+            <!-- Botão de Fechar -->
+            <div class="flex justify-center gap-4">
+                <button @onclick="NavigateBack" class="w-full px-6 py-2 font-extrabold bg-custom_purple/95 text-white rounded-xl hover:bg-custom_purple hover:scale-110 hover:shadow-xl transition-all duration-500">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+}
+}
+
+@code {
+    [Parameter] public int idLinha {get; set;}
+    [Parameter] public int etapaNum {get; set;}
+
+    private bool showModal = false;
+
+
+    private string newInstrucao = "";
+    private string newDescription = "";
+    private int newId = 0; 
+    private string newEstado = "";
+    private string newImagem = "";
+
+
+    private LinhaDeMontagemModel linha = new LinhaDeMontagemModel();
+    private EtapaModel etapaEditar = new EtapaModel();
+
+    private async Task CarregarLinha()
+    {
+        linha = await db.GetLinhaDeMontagem(idLinha);
+        if(linha != null){
+            linha.Etapas = await dbAux.GetEtapasByLinhaDeMontagem(linha.Id);
+        }
+    }
+
+    private string ActiveTab = "pending";
+    private string tipo;
+
+    private void SetPending()
+    {
+        ActiveTab = "pending";
+    }
+    private void SetDelivered()
+    {
+        ActiveTab = "delivered";
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/paineladmin/linhas", true);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string? role = await auth.GetTipo();
+
+        if(role != null){
+            tipo = role;
+        }
+
+        await CarregarLinha();
+        etapaEditar = linha.Etapas[etapaNum-1];
+        if(etapaEditar != null){
+            newInstrucao = etapaEditar.Instrucao;
+            newDescription = etapaEditar.Descricao;
+            newEstado = etapaEditar.Estado;
+            newImagem = etapaEditar.Imagem;
+            newId = etapaEditar.Id;
+        }
+    }
+
+    private async Task ApplyChanges()
+    {
+        await dbAux.UpdateEtapa(newId, newDescription, newInstrucao, newImagem);
+        
+        // Exibe o modal de sucesso
+        showModal = true;
+    }
+}
+

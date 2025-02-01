@@ -1,0 +1,145 @@
+@page "/paineladmin/linhas"
+@using Bloomify.Shared
+
+@inject AuthenticationStateProvider AuthProvider
+@inject ILinhaDeMontagemService db
+@inject IEtapaService dbAux
+
+@if (tipo == null)
+{
+    <div class="flex justify-center items-center h-screen">
+        <span>Loading...</span>
+    </div>
+}
+
+@if(tipo != "Admin")
+{
+    <Error403 />
+}else
+{
+<div class="bg-white min-h-screen flex-col flex overflow-hidden font-outfit">
+    <NavBarUtilizador/>
+    
+    <div class="relative flex-auto flex items-center justify-center">
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <svg viewBox="0 0 1280 672" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
+                <g filter="url(#filter0_f_32_4)">
+                    <path d="M567.097 1641.67C1087.23 1781.04 1602.84 1543.37 1718.74 1110.82C1834.65 678.269 1506.95 214.636 986.815 75.2658C466.679 -64.1041 -48.9306 173.566 -164.832 606.118C-280.734 1038.67 46.962 1502.3 567.097 1641.67Z" fill="url(#paint0_linear_32_4)"/>
+                </g>
+                <defs>
+                    <filter id="filter0_f_32_4" x="-223.138" y="0.393372" width="2000.19" height="1716.15" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                        <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                        <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_32_4"/>
+                    </filter>
+                    <linearGradient id="paint0_linear_32_4" x1="777" y1="100" x2="777" y2="1000" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#3F784C" stop-opacity="0"/>
+                        <stop offset="50%" stop-color="#3F784C" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#3F784C" stop-opacity="0.95"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <div class="container flex flex-col mx-auto px-4 sm:px-6 lg:px-8 items-center justify-center">
+            <div class="text-center mt-4">
+                <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl 2xl:text-8xl font-black mb-2 font-outfit text-custom_green">
+                    Gerir Linhas de Montagem
+                </h1>
+            </div>           
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 w-full place-items-center">
+            @foreach (var line in linhas){
+                <CardLinha OnEdit="@(lime => OpenModal(line))" Linha = "line" />
+            }
+            </div>
+        </div>
+    </div>
+
+    @if (isModalOpen)
+    {
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50">
+        <div class="bg-white p-8 rounded-2xl max-w-xl shadow-2xl w-full relative">
+            
+            <button 
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-all duration-200" 
+                @onclick="CloseModal" 
+                aria-label="Fechar">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <h2 class="text-3xl font-extrabold text-custom_purple text-center">Selecionar Etapa para Editar</h2>
+
+            <p class="text-base text-gray-500 text-center mt-2">Escolha a etapa que deseja modificar. Todas as alterações serão aplicadas à linha de montagem selecionada.</p>
+            
+            <div class="grid grid-cols-1 gap-4 mt-6">
+                @foreach (var etapa in linhas[linhaSelecionadaId - 1].Etapas)
+                {
+                    <button @onclick="() => NavigateToEditStep(linhas[linhaSelecionadaId - 1], etapa.NumeroEtapa)" 
+                            class="bg-white text-custom_purple font-semibold py-3 ring-2 ring-custom_purple px-6 rounded-lg shadow-md hover:shadow-xl hover:bg-custom_purple hover:text-white transition-all duration-200 flex items-center justify-between gap-4 w-full transform hover:-translate-y-1">
+                        <span class="text-2xl font-bold transition-all duration-200">Etapa @etapa.NumeroEtapa</span>
+                        <div class="w-8 h-8 flex items-center justify-center bg-white text-custom_purple rounded-full ring-2 ring-custom_purple transition-colors duration-200 hover:text-white">
+                            <span class="font-semibold text-lg">@etapa.NumeroEtapa</span>
+                        </div>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+    }
+
+</div>
+}
+
+@code {
+    private bool isModalOpen = false;
+    private string tipo;
+    private List<LinhaDeMontagemModel> linhas = new List<LinhaDeMontagemModel>();
+    private int linhaSelecionadaId;
+
+
+    private async Task CarregarLinhas()
+    {
+        linhas = await db.GetLinhasDeMontagem();
+        foreach(var linha in linhas){
+            linha.Etapas = await dbAux.GetEtapasByLinhaDeMontagem(linha.Id);
+        }
+    }
+
+    private void OpenModal(LinhaDeMontagemModel linha)
+    {
+        isModalOpen = true;
+        linhaSelecionadaId = linha.Id;
+    }
+
+    private void CloseModal()
+    {
+        isModalOpen = false;
+    }
+
+    private void SaveChanges()
+    {
+        // Salve as alterações aqui
+        isModalOpen = false;
+    }
+
+    private void NavigateToEditStep(LinhaDeMontagemModel l,int etapa)
+    {
+        NavigationManager.NavigateTo($"/paineladmin/linhas/{l.Id}/etapa-{etapa}", true);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string? role = await auth.GetTipo();
+
+        if(role != null){
+            tipo = role;
+        }
+
+        await CarregarLinhas();
+
+    }
+}

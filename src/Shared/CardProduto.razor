@@ -1,0 +1,174 @@
+@inject IUserService db
+@inject NavigationManager NavManager
+@inject ILinhaDeMontagemService linhaService
+@inject AuthenticationStateProvider AuthProvider
+@inject IComponentService componentService
+@inject IEtapaService etapaService
+
+
+<div class="w-[300px] xl:w-[400px] bg-white rounded-3xl p-4 [filter:drop-shadow(0px_0px_30px_rgba(0,0,0,0.20))] font-outfit">
+    <!-- Product Header -->
+    <div class="text-center">
+        <h2 class="text-2xl md:text-3xl 2xl:text-5xl xl:text-4xl font-black mb-2">Produto @Product.Id</h2>
+        <h3 class="text-xl md:text-2xl 2xl:text-3xl xl:text-2xl font-bold text-custom_purple mb-2">@Product.Nome</h3>
+    </div>
+    
+    @if(Product != null && @Product.Componentes.Any())
+    {
+        <div class="mb-2">
+            <h4 class="font-extrabold text-xl mb-2">Componentes:</h4>
+            @foreach(var c in @Product.Componentes){
+                <ul class="space-y-1 font-normal">
+                    <li class="flex items-center gap-2">
+                        <span class="text-custom_purple font-black">•</span>
+                        @c.Nome
+                        <span>(@c.Quantidade<span>x)</span></span>
+                    </li>
+                </ul>
+            }
+        </div>
+    }
+
+    <div class="mb-4">
+        <h4 class="font-extrabold text-xl mb-2">Estado da linha de montagem</h4>
+        
+        <!-- Container principal usando grid para duas colunas -->
+        <div class="grid grid-cols-2 gap-y-4">
+            <!-- Primeira linha - Tempo e Operador -->
+            <div class="flex items-center gap-2">
+                <!-- Ícone do relógio e tempo -->
+                <span class="w-8 h-8 flex items-center justify-center text-custom_purple">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <rect width="32" height="32" fill="url(#pattern0_126_357)"/>
+                        <defs>
+                        <pattern id="pattern0_126_357" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_126_357" transform="scale(0.0104167)"/>
+                        </pattern>
+                        <image id="image0_126_357" width="96" height="96" xlink:href="data:image/png;base64,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"/>
+                        </defs>
+                    </svg>
+                </span>
+                <span>@linha.TempoDeMontagem</span>
+            </div>
+            
+            <div class="flex items-center gap-2 justify-end px-2">
+                <!-- Ícone do usuário e nome -->
+                <span class="w-8 h-8 flex items-center justify-center text-custom_purple">
+                @if(tipo == "Funcionario"){
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_123_55)">
+                            <path d="M23.747 5.95996C23.6403 5.95996 23.5336 5.93329 23.4403 5.87996C20.8803 4.55996 18.667 3.99996 16.0136 3.99996C13.3736 3.99996 10.867 4.62663 8.58697 5.87996C8.26697 6.05329 7.86697 5.93329 7.68031 5.61329C7.50697 5.29329 7.62697 4.87996 7.94697 4.70663C10.427 3.35996 13.147 2.66663 16.0136 2.66663C18.8536 2.66663 21.3336 3.29329 24.0536 4.69329C24.387 4.86663 24.507 5.26663 24.3336 5.58663C24.2136 5.82663 23.987 5.95996 23.747 5.95996ZM4.66697 12.96C4.53364 12.96 4.40031 12.92 4.28031 12.84C3.97364 12.6266 3.90697 12.2133 4.12031 11.9066C5.44031 10.04 7.12031 8.57329 9.12031 7.54663C13.307 5.38663 18.667 5.37329 22.867 7.53329C24.867 8.55996 26.547 10.0133 27.867 11.8666C28.0803 12.16 28.0136 12.5866 27.707 12.8C27.4003 13.0133 26.987 12.9466 26.7736 12.64C25.5736 10.96 24.0536 9.63996 22.2536 8.71996C18.427 6.75996 13.5336 6.75996 9.72031 8.73329C7.90697 9.66663 6.38697 11 5.18697 12.68C5.08031 12.8666 4.88031 12.96 4.66697 12.96ZM13.0003 29.0533C12.827 29.0533 12.6536 28.9866 12.5336 28.8533C11.3736 27.6933 10.747 26.9466 9.85364 25.3333C8.93364 23.6933 8.45364 21.6933 8.45364 19.5466C8.45364 15.5866 11.8403 12.36 16.0003 12.36C20.1603 12.36 23.547 15.5866 23.547 19.5466C23.547 19.92 23.2536 20.2133 22.8803 20.2133C22.507 20.2133 22.2136 19.92 22.2136 19.5466C22.2136 16.32 19.427 13.6933 16.0003 13.6933C12.5736 13.6933 9.78697 16.32 9.78697 19.5466C9.78697 21.4666 10.2136 23.24 11.027 24.68C11.8803 26.2133 12.467 26.8666 13.4936 27.9066C13.747 28.1733 13.747 28.5866 13.4936 28.8533C13.347 28.9866 13.1736 29.0533 13.0003 29.0533ZM22.5603 26.5866C20.9736 26.5866 19.5736 26.1866 18.427 25.4C16.4403 24.0533 15.2536 21.8666 15.2536 19.5466C15.2536 19.1733 15.547 18.88 15.9203 18.88C16.2936 18.88 16.587 19.1733 16.587 19.5466C16.587 21.4266 17.547 23.2 19.1736 24.2933C20.1203 24.9333 21.227 25.24 22.5603 25.24C22.8803 25.24 23.4136 25.2 23.947 25.1066C24.307 25.04 24.6536 25.28 24.7203 25.6533C24.787 26.0133 24.547 26.36 24.1736 26.4266C23.4136 26.5733 22.747 26.5866 22.5603 26.5866ZM19.8803 29.3333C19.827 29.3333 19.7603 29.32 19.707 29.3066C17.587 28.72 16.2003 27.9333 14.747 26.5066C12.8803 24.6533 11.8536 22.1866 11.8536 19.5466C11.8536 17.3866 13.6936 15.6266 15.9603 15.6266C18.227 15.6266 20.067 17.3866 20.067 19.5466C20.067 20.9733 21.307 22.1333 22.8403 22.1333C24.3736 22.1333 25.6136 20.9733 25.6136 19.5466C25.6136 14.52 21.2803 10.44 15.947 10.44C12.1603 10.44 8.69364 12.5466 7.13364 15.8133C6.61364 16.8933 6.34697 18.16 6.34697 19.5466C6.34697 20.5866 6.4403 22.2266 7.24031 24.36C7.37364 24.7066 7.20031 25.0933 6.85364 25.2133C6.50697 25.3466 6.12031 25.16 6.00031 24.8266C5.34697 23.08 5.02697 21.3466 5.02697 19.5466C5.02697 17.9466 5.33364 16.4933 5.93364 15.2266C7.70697 11.5066 11.6403 9.09329 15.947 9.09329C22.0136 9.09329 26.947 13.7733 26.947 19.5333C26.947 21.6933 25.107 23.4533 22.8403 23.4533C20.5736 23.4533 18.7336 21.6933 18.7336 19.5333C18.7336 18.1066 17.4936 16.9466 15.9603 16.9466C14.427 16.9466 13.187 18.1066 13.187 19.5333C13.187 21.8133 14.067 23.9466 15.6803 25.5466C16.947 26.8 18.1603 27.4933 20.0403 28.0133C20.4003 28.1066 20.6003 28.48 20.507 28.8266C20.4403 29.1333 20.1603 29.3333 19.8803 29.3333Z" fill="#783F6B"/>
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_123_55">
+                                <rect width="32" height="32" fill="white"/>
+                            </clipPath>
+                        </defs>
+                    </svg>
+                }else if(tipo == "Cliente"){
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <rect width="32" height="32" fill="url(#pattern0_126_443)"/>
+                        <defs>
+                        <pattern id="pattern0_126_443" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_126_443" transform="scale(0.0104167)"/>
+                        </pattern>
+                        <image id="image0_126_443" width="96" height="96" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAAEpUlEQVR4nO2cz4tbVRTHbwtKtaKCP1Yqiii2iigFUZycM6PWnQhWRHHRhZo25ySjNTX3PEt9RYobF1JFcSXiqoq66B+gSFFxpS5UFG3VFqUoFCtOVWgjJ5l2hpHmJel7ufflnQ9cGDLJffd8vzn33V95zhmGYRiGYRiGYUSOIHcHldDtm3rEDDADKo1YBoQhwa03CfL2LAP0PZ05ujFQM6eLZKZ1mQClHvnnIYRfUegnD/zc01i/NHQcpSPFJy/2wK8I0sLowv/PiAWPvMffU78odFylwEPjPgE6dPbCryjAvyZID4aOL2ZWeeRduQu/omg2pC5dHTrYqNh2+7bzBOn9osVfygZ6N8XNa0LHHQWpS1d75PcmJv5yEywTnPNAL01c/FPdEdCLrsok0HgglPinTZil+10V0WGhBz4c3ADkX3TY66pGf5zPQcVfZsIeV7kZbi6TLM6p0EKlZsyTGO/L6CbsdFVhvLUdLrYbAv7RVWhVsxtjSWZa6920M+SScjdMFlDbTRuhRZWzLK7shBZQzIDwIoplQHghxbqgchZXdkILKGZAeBHFMiC8kFLVLigLj/TPIAFSpAvGrTu9rXXhQIGB/nZVR4B/GyRSBxrrxq1blxYyvuFHXNURpM8GieSRW+PXzU8Nrps+cVVHkF8fKBLw5+Nsni9u9n85uAvi11zV6QA9lHUj9MiPj1qvANcz653lTa7qtDe213rgPzOy4LhHmhm2zgSaNf1MhgHH0g3184uNriQI0MuZ31bg4wnSE4O6I/1fp0ZbhhBfs+rVyUYZMe07tl6u38ihxuZAXwjQvB5B1+zRYar+ra9l9vnLM+rO+atCxx0VgrRzKANyKLonHTre6KhvqJ8jQB8WbgDw/nR9em7oeKNE7uZLBOj7AsU/qEdiQscZNR1orPNIBwow4IcEmzeEjq80meCRP8iz29Ebfei4SndP8MDP64LZ2Dfb3vyBd2ldoeMpLR63XK1LBkMPU/vlmI7zbaiZI+2N7bX6G6+eGUCf6kqmLmUvLmcf0dd6os/yJpvhGoZhGIZhGIZhjEGKm9d4aN0qSI94pN0eaa8gf+SBvvFAv3ugo0tLDnRUXxPkr3vvQdqrn9HPPot0iz2WYAQEeZ8uSXukE/ltwNCJxWXufZYN2QZ0iyyVNUA3zBNozMVuQNJv4yo3LeyoNa7sP3asv8kSuwHS77IOaJs72LrClZVnYP663qPCVhwRKYMBslT+9cBv6U9rXVnYUWteI0jvCPLJHAToBjbgVNFY3ta9CRfzU6880AtZh6JKakB32Qm93dENa3UjvXdgqmABJLABp41A+iqZadzsYkAnO6M8+WQaDJD+4a6/OsgPu5DoWc1RJ0zTYoAsTvCSWvMxFwKp0aNnutFWxQDpl5MTz4Ttc61rPdIfkQjQDX393vH6Gb4+N4GHaOTHMQkgMVwfeH9uAg9sYK1xb5QCYPjr+1rzLlc0HunNWAWQ0AYAvZGb0GduIH0XqwAS2gCkb13RDPPzn6oaIEgLuQldlEBF1y+Br5+b0KEaKGaAGSCWAWxdkHVBbPcAsZuwYRiGYRiGYRiGYRiG4aaH/wA73Uk0sXKNiwAAAABJRU5ErkJggg=="/>
+                        </defs>
+                    </svg>
+                }
+                </span>
+                <span class="px-2">@(tipo == "Funcionario" ? idLinha : Nome)</span>
+            </div>
+
+            <!-- Segunda linha - Localização e Progresso -->
+            <div class="flex items-center gap-2">
+                <!-- Ícone de localização e texto -->
+                <span class="w-8 h-8 flex items-center justify-center text-custom_purple">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <rect width="32" height="32" fill="url(#pattern0_126_368)"/>
+                        <defs>
+                        <pattern id="pattern0_126_368" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_126_368" transform="scale(0.0104167)"/>
+                        </pattern>
+                        <image id="image0_126_368" width="96" height="96" xlink:href="data:image/png;base64,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"/>
+                        </defs>
+                    </svg>
+                </span>
+                <span>@(etapaAtual > 0 ? $"Etapa {etapaAtual}" : "Não iniciada")</span>
+            </div>
+
+            <div class="flex items-center gap-2 justify-end px-2">
+                <!-- Ícone de gráfico e porcentagem -->
+                <span class="w-8 h-8 flex items-center justify-center text-custom_purple">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <rect width="32" height="32" fill="url(#pattern0_126_365)"/>
+                        <defs>
+                        <pattern id="pattern0_126_365" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_126_365" transform="scale(0.0104167)"/>
+                        </pattern>
+                        <image id="image0_126_365" width="96" height="96" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAABmklEQVR4nO3aTU7DMBCG4RwElohTEIvbgC3Ytf0kboQiblYJegFQqIQ0FRungak97yNlWTmeL5Mf18MAAAAAAAAAAAAQ0Mvd47XGPCmVg1L5rDwOSvltc/9w6z2Pdouf8n5B4U+OvN+mpyvv+TRHxyv/zOL/hPDqPZ/maNlt59djl/KH93yao9Wu/uPhPZ/miAB8EYAzAnBGAM4IwBkBOCMAZwTgjACcEYAzAnBenycA5/V5AnBenycA5/V5AnAuCAGcIABnogMIQJH/khQdQACiAwpvQdyCCs8A8R3AQ1i8BRW+hHkNLb7fAT2vz+ufx6vW+/q8Lj2A3tfndfEBdL4+rwYC6LogIgCLAIIVRHSARQDBCiI6wCKAYAURHWARQLCCiA6wCCBYQUQHWAQQrCCiAywCCFYQ0QEWAQQriOgAiwCCFUR0gEUAwQoiOsAigGAFER1gEcAfbszSWN6jj1dt3li73gnmKfp41eZdzWttzt2MzzfRx1tk3tU8b6yd93bWntj3b8Y81ZzctvPxAAAAAAAAAADA0LUvTPO79EjFtM8AAAAASUVORK5CYII="/>
+                        </defs>
+                    </svg>
+                </span>
+                <span class="px-2">@linha.Percentagem_Conclusao%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-2">
+        <div @onclick="NavigateToLinha"
+                class="py-0 md:py-2 px-4 rounded-2xl text-center font-black xl:text-xl text-2xl
+                    transition-all duration-500 ease-in-out cursor-pointer
+                    @(linha.Percentagem_Conclusao == 100 ? "bg-gray-400 text-gray-800 cursor-default" : "bg-custom_purple/95 text-white hover:bg-custom_purple hover:shadow-lg hover:scale-105")">
+            @(linha.Percentagem_Conclusao == 100 ? "Concluído" : "Linha de Montagem")
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ProductModel? Product { get; set; }
+
+    [Parameter]
+    public string Nome { get; set; }
+
+    private string idLinha = "";
+    private string tipo = "";
+    private LinhaDeMontagemModel linha = new();
+    private List<ComponentModel> componentes = new();
+
+    private int? etapaAtual = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string? role = await auth.GetTipo();
+        string? email = await auth.GetEmail();
+
+        if (role != null)
+        {
+            tipo = role;
+        }
+
+        linha = await linhaService.GetLinhaDeMontagemByProduto(Product.Id);
+
+        if(linha != null){
+            idLinha = linha.Id.ToString();
+            int? total_etapas = await etapaService.GetNEtapasByLinhaDeMontagem(linha.Id);
+
+            if (total_etapas.HasValue && total_etapas > 0)
+            {
+                etapaAtual = linha.Percentagem_Conclusao / (100 / total_etapas.Value);
+            }
+        }
+            componentes = await componentService.GetComponentesParaMontagem(Product.Id);
+    }
+
+    private void NavigateToLinha()
+    {
+        if (linha != null && linha.Id > 0 && linha.Percentagem_Conclusao < 100)
+            NavManager.NavigateTo(
+                $"/linha-montagem/{Product.Id}", true
+            );
+    }
+}

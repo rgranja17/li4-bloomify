@@ -1,0 +1,65 @@
+@using Microsoft.AspNetCore.Components
+
+<div 
+    class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center transition-opacity duration-300 ease-in-out @(IsVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none")"
+    role="dialog"
+    aria-hidden="@(!IsVisible)"
+    aria-labelledby="modal-title"
+    aria-describedby="modal-description"
+>
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 relative">
+        <!-- Ícone de sucesso -->
+        <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <!-- Título -->
+            <h3 id="modal-title" class="text-lg leading-6 font-semibold text-gray-900 mt-3">@Title</h3>
+            <!-- Mensagem -->
+            <p id="modal-description" class="text-sm text-gray-500 mt-2">@Message</p>
+        </div>
+        <!-- Botão de Fechar -->
+        <div class="mt-5 sm:flex sm:flex-row-reverse">
+            <button 
+                @onclick="Close"
+                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 
+                        bg-green-600 text-base font-medium text-white hover:bg-green-700 
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 
+                        sm:ml-3 sm:w-auto sm:text-sm"
+            >
+                Continuar
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Sucesso!";
+
+    [Parameter]
+    public string Message { get; set; } = "Operação concluída com sucesso.";
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task Cancel()
+    {
+        IsVisible = false;
+        await OnCancel.InvokeAsync();
+    }
+}

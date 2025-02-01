@@ -1,0 +1,168 @@
+@page "/encomenda/{OrderId:int}"
+@page "/encomenda/{OrderId:int}/{Progress:int}/{OrderType}/{DeliveryDate}"
+@using Bloomify.Shared
+
+@inject IProductService productService
+@inject IOrderService orderService
+@inject IComponentService componenteService
+@inject IUserService db
+@inject AuthenticationStateProvider AuthProvider
+
+<div class="bg-white min-h-screen flex-col flex overflow-hidden">
+    <NavBarUtilizador/>
+
+    <div class="relative flex-auto flex items-center justify-center">
+        <!-- Background SVG -->
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <svg viewBox="0 0 1280 672" fill="none" xmlns="http://www.w3.org/2000/svg" 
+                class="w-full h-full object-cover">
+                <g filter="url(#filter0_f_32_4)">
+                    <path d="M567.097 1641.67C1087.23 1781.04 1602.84 1543.37 1718.74 1110.82C1834.65 678.269 1506.95 214.636 986.815 75.2658C466.679 -64.1041 -48.9306 173.566 -164.832 606.118C-280.734 1038.67 46.962 1502.3 567.097 1641.67Z" fill="url(#paint0_linear_32_4)"/>
+                </g>
+                <defs>
+                    <filter id="filter0_f_32_4" x="-223.138" y="0.393372" width="2000.19" height="1716.15" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                        <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                        <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_32_4"/>
+                    </filter>
+                    <linearGradient id="paint0_linear_32_4" x1="777" y1="100" x2="777" y2="1000" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#3F784C" stop-opacity="0"/>
+                        <stop offset="50%" stop-color="#3F784C" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#3F784C" stop-opacity="0.95"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <!-- Container principal com padding responsivo -->
+        <div class="container flex flex-col mx-auto px-4 sm:px-6 lg:px-8 items-center justify-center">
+            <!-- Título -->
+            <div class="text-center mb-4 mt-4">
+                <h1 class="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black font-outfit text-custom_green">
+                    Encomenda @orderId
+                </h1>
+            </div>
+            
+            <!-- Card Container com largura máxima e centralizado -->
+            <div class="w-11/12 2xl:w-full mb-3">
+                <div class="bg-white rounded-3xl shadow-2xl [filter:drop-shadow(0px_0px_10px_rgba(0,0,0,0.10))]">
+
+                    <DetalhesEncomenda Type="@OrderType" Progress="@Progress" Date="@DeliveryDate" />
+
+                    <div class="w-full">
+                        <div class="flex flex-row gap-6 p-6 items-center justify-center">
+                            @if (produtos != null && produtos.Any())
+                            {
+                                var start = currentPage * itemsPerPage;
+                                var end = Math.Min(start + itemsPerPage, produtos.Count);
+
+                                @for (var i = start; i < end; i++)
+                                {
+                                    <CardProduto Product="produtos[i]" Nome = "@nome" />
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-center text-gray-500">Nenhum produto encontrado.</p>
+                            }
+                        </div>
+
+                        @if (produtos != null && produtos.Count > itemsPerPage)
+                        {
+                            <div class="flex justify-center gap-4">
+                                <button 
+                                    class="px-4 py-2 bg-custom_purple text-white rounded-lg disabled:opacity-50 mb-3"
+                                    @onclick="PreviousPage"
+                                    disabled="@(currentPage == 0)">
+                                    Anterior
+                                </button>
+                                <span class="self-center mb-3">
+                                    Página @(currentPage + 1) de @totalPages
+                                </span>
+                                <button 
+                                    class="px-4 py-2 bg-custom_purple text-white rounded-lg disabled:opacity-50 mb-3"
+                                    @onclick="NextPage"
+                                    disabled="@(currentPage >= totalPages - 1)">
+                                    Próximo
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div> 
+        </div> 
+    </div> 
+</div> 
+
+@code {
+    [Parameter]
+    public int orderId { get; set; }
+
+    [Parameter]
+    public int Progress { get; set; } = 0;
+
+    [Parameter]
+    public string? OrderType { get; set; }
+
+    [Parameter]
+    public string? DeliveryDate { get; set; }
+
+    private List<ProductModel> produtos = new();
+    private List<ComponentModel> componentes = new();
+    private string nome = "";
+    private string tipo = "";
+    private string ActiveTab = "pending";
+    private int currentPage = 0;
+    private int itemsPerPage = 3;
+    private int totalPages => produtos.Count > 0 ? (int)Math.Ceiling((double)produtos.Count / itemsPerPage) : 1;
+
+    private void NextPage()
+    {
+        if (currentPage < totalPages - 1)
+            currentPage++;
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 0)
+            currentPage--;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string? role = await auth.GetTipo();
+        string? email = await auth.GetEmail();
+
+        if (role != null)
+        {
+            tipo = role;
+        }
+        
+        if(email != null)
+        {
+            var order = await orderService.GetOrderFuncionario(orderId);
+            if(order.HasValue)
+            {
+                int? funcionarioId = await db.GetFuncionarioUserId(order.Value);
+            
+                if (funcionarioId.HasValue)
+                {
+                    var user = await db.GetUserById(funcionarioId.Value);
+                    nome = user?.Nome ?? "Nome não encontrado";
+                }
+                else
+                {
+                    nome = "Funcionário não encontrado";
+                }
+            }
+        produtos = await productService.GetProductsByOrderId(orderId);
+        
+        foreach(var produto in produtos){
+            componentes = await componenteService.GetComponentesParaMontagem(produto.Preco == 15 ? 1 : 2);
+            produto.Componentes = componentes;
+        }
+        }
+    }
+}
+

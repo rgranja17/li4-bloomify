@@ -1,0 +1,50 @@
+<div class="bg-white rounded-3xl shadow-2xl py-2 w-full [filter:drop-shadow(0px_2px_4px_rgba(0,0,0,0.10))] flex items-center justify-center font-outfit">
+    <div class="flex flex-col md:flex-row items-center justify-center w-full px-4 space-y-4 md:space-y-0 md:space-x-8">
+        <div class="flex items-center gap-2 justify-center">
+            <div class="w-11 h-4 bg-gray-200 rounded-lg overflow-hidden border-custom_green border-2">
+                <div class="h-full bg-custom_green" style="width: @(Progress)%"></div>
+            </div>
+            <div class="flex items-center">
+                <span class="text-xl md:text-2xl font-bold">@Progress</span>
+                <span class="text-xl md:text-2xl font-medium">%</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 w-full md:w-auto justify-center md:justify-start">
+            <svg width="36" height="36" md:width="42" md:height="41" viewBox="0 0 42 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0.858398" width="40.9519" height="41" fill="url(#pattern0_120_408)"/>
+                <defs>
+                    <pattern id="pattern0_120_408" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_120_408" transform="matrix(0.0104167 0 0 0.0104044 0 0.000586859)"/>
+                    </pattern>
+                    <image id="image0_120_408" width="96" height="96" xlink:href="data:image/png;base64,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"/>
+                </defs>
+            </svg>
+            <div class="flex items-center">
+                <span class="text-2xl font-bold">@Type</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 justify-center">
+            <svg width="36" height="36" md:width="41" md:height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15.3571 18.7917H11.9445V22.2084H15.3571V18.7917ZM22.1824 18.7917H18.7698V22.2084H22.1824V18.7917ZM29.0077 18.7917H25.5951V22.2084H29.0077V18.7917ZM32.4204 6.83341H30.7141V3.41675H27.3014V6.83341H13.6508V3.41675H10.2381V6.83341H8.5318C6.63777 6.83341 5.1362 8.37091 5.1362 10.2501L5.11914 34.1667C5.11914 36.0459 6.63777 37.5834 8.5318 37.5834H32.4204C34.2974 37.5834 35.833 36.0459 35.833 34.1667V10.2501C35.833 8.37091 34.2974 6.83341 32.4204 6.83341ZM32.4204 34.1667H8.5318V15.3751H32.4204V34.1667Z" fill="#3F784C"/>
+            </svg>
+
+            <div class="flex items-center">
+                <span class="text-xl md:text-2xl font-bold mx-1">@Date</span>
+                <span class="text-xl md:text-2xl font-medium">(est)</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    [Parameter]
+    public int? Progress { get; set; }
+
+    [Parameter]
+    public string? Type { get; set; }
+
+    [Parameter]
+    public string? Date { get; set; }
+}

@@ -1,0 +1,29 @@
+<div class="max-w-xs rounded-xl border-4 border-custom_purple bg-white p-4 shadow font-outfit">
+    <div class="space-y-2">
+        <h2 class="text-xl font-extrabold text-custom_purple">@Nome</h2>
+
+        <div class="space-y-1">
+            <div class="flex justify-between">
+                <span class="text-custom_purple font-semibold">ID:</span>
+                <span class="font-medium">@Id</span>
+            </div>
+
+            <div class="flex justify-between">
+                <span class="text-custom_purple font-semibold">Cor:</span>
+                <span class="font-medium">@Cor</span>
+            </div>
+
+            <div class="flex justify-between">
+                <span class="text-custom_purple font-semibold">Qtd:</span>
+                <span class="font-medium">@Quantidade</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Nome { get; set; }
+    [Parameter] public string Cor { get; set; }
+    [Parameter] public int Quantidade { get; set; }
+    [Parameter] public int Id { get; set; }
+}

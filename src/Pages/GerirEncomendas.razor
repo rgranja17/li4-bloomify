@@ -1,0 +1,258 @@
+@page "/paineladmin/encomendas"
+@using Bloomify.Shared
+
+@inject AuthenticationStateProvider AuthProvider
+@inject IOrderService db
+@inject INotificationService notificationService
+@inject IUserService userService
+
+
+@if (tipo == null)
+{
+    <div class="flex justify-center items-center h-screen">
+        <span>Loading...</span>
+    </div>
+} 
+@if(tipo != "Admin")
+{
+    <Error403 />
+}
+
+<div class="bg-white min-h-screen flex-col flex overflow-hidden">
+    <NavBarUtilizador/>
+    
+    <div class="relative flex-auto flex items-center justify-center">
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <svg viewBox="0 0 1280 672" fill="none" xmlns="http://www.w3.org/2000/svg" 
+                class="w-full h-full object-cover">
+                <g filter="url(#filter0_f_32_4)">
+                    <path d="M567.097 1641.67C1087.23 1781.04 1602.84 1543.37 1718.74 1110.82C1834.65 678.269 1506.95 214.636 986.815 75.2658C466.679 -64.1041 -48.9306 173.566 -164.832 606.118C-280.734 1038.67 46.962 1502.3 567.097 1641.67Z" fill="url(#paint0_linear_32_4)"/>
+                </g>
+                <defs>
+                    <filter id="filter0_f_32_4" x="-223.138" y="0.393372" width="2000.19" height="1716.15" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                        <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                        <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                        <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_32_4"/>
+                    </filter>
+                    <linearGradient id="paint0_linear_32_4" x1="777" y1="100" x2="777" y2="1000" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#3F784C" stop-opacity="0"/>
+                        <stop offset="50%" stop-color="#3F784C" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#3F784C" stop-opacity="0.95"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <div class="container flex flex-col mx-auto px-4 sm:px-6 lg:px-8 items-center justify-center">
+            <div class="text-center mb-2 mt-4">
+                <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl 2xl:text-8xl font-black font-outfit text-custom_green">
+                    Gerir Encomendas
+                </h1>
+            </div>
+            
+            <div class="w-11/12 2xl:w-full mb-6">
+                <div class="bg-white rounded-3xl shadow-2xl py-3 px-4 sm:px-6 lg:px-8 [filter:drop-shadow(0px_0px_20px_rgba(0,0,0,0.20))] relative min-h-[600px] flex flex-col">
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <button 
+                            class="@(ActiveTab == "pending" ? "bg-custom_purple" : "bg-opacity-50 bg-custom_purple") rounded-2xl text-white font-black font-outfit text-lg sm:text-xl px-6 sm:px-8 py-2"
+                            @onclick="SetPending">
+                            Pendentes
+                        </button>
+                        <button 
+                            class="@(ActiveTab == "delivered" ? "bg-custom_purple" : "bg-opacity-50 bg-custom_purple") rounded-2xl text-white font-black font-outfit text-lg sm:text-xl px-6 sm:px-8 py-2"
+                            @onclick="SetDelivered">
+                            Entregues
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1 overflow-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 py-2 max-w-6xl mx-auto content-start">
+                            @{
+                                if (ActiveTab == "pending")
+                                {
+                                    var start = currentPage * itemsPerPage;
+                                    var end = Math.Min(start + itemsPerPage, totalCardsPending);
+
+                                    foreach (var encomenda in pendingEncomendas.Skip(start).Take(itemsPerPage))
+                                    {
+                                        <CardEncomenda OrderNumber="@encomenda.Id" Status="Pendente" Date="@encomenda.DataEntrega"
+                                                        Products="@ProductsList(encomenda.Products)"
+                                                        Address="@encomenda.Rua" PostalCode="@encomenda.CodigoPostal"
+                                                        OnOrderStatusChanged="AtualizarEncomendas" />
+                                    }
+                                }
+                                else
+                                {
+                                    var start = currentPage * itemsPerPage;
+                                    var end = Math.Min(start + itemsPerPage, totalCardsDelivered);
+
+                                    foreach (var encomenda in deliveredEncomendas.Skip(start).Take(itemsPerPage))
+                                    {
+                                        <CardEncomenda OrderNumber="@encomenda.Id" Status="Concluída" Date="@encomenda.DataEntrega"
+                                                        Products="@ProductsList(encomenda.Products)"
+                                                        Address="@encomenda.Rua" PostalCode="@encomenda.CodigoPostal"
+                                                        OnOrderStatusChanged="AtualizarEncomendas" />
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    @if (ActiveTab == "pending" && totalCardsPending > itemsPerPage)
+                    {
+                        <div class="sticky bottom-0 w-full py-4 bg-white border-t mt-auto">
+                            <div class="flex justify-center gap-4">
+                                <button 
+                                    class="px-4 py-2 bg-custom_purple text-white rounded-lg disabled:opacity-50"
+                                    @onclick="PreviousPage"
+                                    disabled="@(currentPage == 0)">
+                                    Anterior
+                                </button>
+                                <span class="self-center">
+                                    Página @(currentPage + 1) de @totalPagesPending
+                                </span>
+                                <button 
+                                    class="px-4 py-2 bg-custom_purple text-white rounded-lg disabled:opacity-50"
+                                    @onclick="NextPagePending"
+                                    disabled="@(currentPage >= totalPagesPending - 1)">
+                                    Próximo
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    @if (ActiveTab == "delivered" && totalCardsDelivered > itemsPerPage)
+                    {
+                        <div class="sticky bottom-0 w-full py-4 bg-white border-t mt-auto">
+                            <div class="flex justify-center gap-4">
+                                <button 
+                                    class="px-4 py-2 bg-custom_purple text-white rounded-lg disabled:opacity-50"
+                                    @onclick="PreviousPage"
+                                    disabled="@(currentPage == 0)">
+                                    Anterior
+                                </button>
+                                <span class="self-center">
+                                    Página @(currentPage + 1) de @totalPagesDelivered
+                                </span>
+                                <button 
+                                    class="px-4 py-2 bg-custom_purple text-white rounded-lg disabled:opacity-50"
+                                    @onclick="NextPageDelivered"
+                                    disabled="@(currentPage >= totalPagesDelivered - 1)">
+                                    Próximo
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string ActiveTab = "pending";
+    private int currentPage = 0;
+    private int itemsPerPage = 4; // Show 4 cards per page
+    private int totalCardsPending = 0;
+    private int totalPagesPending = 0;
+    private int totalCardsDelivered = 0;
+    private int totalPagesDelivered = 0;
+    private List <OrderModel> pendingEncomendas = new List<OrderModel>();
+    private List <OrderModel> deliveredEncomendas = new List<OrderModel>();
+
+    private List <OrderModel> newDeliveredEncomendas = new List<OrderModel>();
+
+    private string tipo;
+
+    private async Task SetPending()
+    {
+        ActiveTab = "pending";
+        await CarregarEncomendas();
+        currentPage = 0; // Reset to first page when switching tabs
+    }
+
+    private async Task SetDelivered()
+    {
+        ActiveTab = "delivered";
+        await CarregarEncomendas();
+        currentPage = 0; // Reset to first page when switching tabs
+    }
+
+    private void NextPagePending()
+    {
+        if (currentPage < totalPagesPending - 1)
+            currentPage++;
+    }
+
+    private void NextPageDelivered()
+    {
+        if (currentPage < totalPagesDelivered - 1)
+            currentPage++;
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 0)
+            currentPage--;
+    }
+
+    private List<string> ProductsList(List<ProductModel> products)
+    {
+        // Dicionário para contar as ocorrências de cada produto pelo nome
+        Dictionary<string, int> productCounts = new Dictionary<string, int>();
+
+        foreach (var product in products)
+        {
+            if (productCounts.ContainsKey(product.Nome))
+            {
+                productCounts[product.Nome]++;
+            }
+            else
+            {
+                productCounts[product.Nome] = 1;
+            }
+        }
+
+        // Criar a lista formatada com "NomeProduto (Nx)"
+        List<string> result = productCounts
+            .Select(entry => $"{entry.Key} ({entry.Value}x)")
+            .ToList();
+
+        return result;
+    }
+
+
+
+    private async Task CarregarEncomendas()
+    {
+        pendingEncomendas = await db.GetOrdersByEstado("Pendente");
+        deliveredEncomendas = await db.GetOrdersByEstado("Concluída");
+    }
+
+    private async Task AtualizarEncomendas()
+    {
+        await CarregarEncomendas();
+        StateHasChanged();
+    }
+
+
+    private void totalCardsPagesInit() {
+        totalCardsPending = pendingEncomendas.Count;
+        totalCardsDelivered = deliveredEncomendas.Count;
+        totalPagesPending = (int)Math.Ceiling((double)totalCardsPending / itemsPerPage);
+        totalPagesDelivered = (int)Math.Ceiling((double)totalCardsDelivered / itemsPerPage);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string? role = await auth.GetTipo();
+
+        if(role != null){
+            tipo = role;
+        }
+
+        await CarregarEncomendas();
+
+        totalCardsPagesInit();
+    }
+}

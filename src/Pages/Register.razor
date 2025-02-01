@@ -1,0 +1,207 @@
+@page "/register"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using BCrypt.Net
+
+@inject IJSRuntime js
+@inject NavigationManager NavManager
+@inject IUserService db
+
+<PageTitle>Registrar - Bloomify</PageTitle>
+
+<div class="w-full min-h-screen flex items-center justify-center p-8 relative">
+    <div class="absolute inset-0 w-full h-full z-0">
+        <img src="assets/authBg.png" alt="Background" class="w-full h-full object-cover">
+    </div>
+    <div class="relative bg-custom_gray rounded-3xl h-auto w-full md:w-3/4 lg:w-2/4 xl:w-auto shadow-lg flex flex-col px-6 md:px-10 xl:px-8">
+        <div class="flex flex-col items-center">
+            <a href="/">
+                <img src="assets/icon.png" alt="Bloomify Logo" class="w-auto h-20 md:h-34 mt-2">
+            </a>
+        </div>
+
+        <EditForm Model="@registerModel" OnValidSubmit="() => RegisterUser()" class="space-y-4 xl:space-y-4 w-full flex-grow">
+            <DataAnnotationsValidator />
+
+            <div>
+                <label for="nome" class="block font-outfit font-bold text-gray-500 text-sm">Nome</label>
+                <InputText id="nome" 
+                            @bind-Value="registerModel.Nome" 
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" 
+                            placeholder="João Sá" />
+                <ValidationMessage For="@(() => registerModel.Nome)" class="text-red-500 text-xs mt-1" />
+            </div>
+
+            <div>
+                <label for="email" class="block font-outfit font-bold text-gray-500 text-sm">Email</label>
+                <InputText id="email" 
+                            @bind-Value="registerModel.Email" 
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" 
+                            placeholder="email@dominio.com" />
+                <ValidationMessage For="@(() => registerModel.Email)" class="text-red-500 text-xs mt-1" />
+            </div>
+
+            <div>
+                <label for="NumeroTelemovel" class="block font-outfit font-bold text-gray-500 text-sm">Número de Telemóvel</label>
+                <InputText id="NumeroTelemovel" 
+                            @bind-Value="registerModel.NumeroTelemovel" 
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" 
+                            placeholder="910000000" />
+                <ValidationMessage For="@(() => registerModel.NumeroTelemovel)" class="text-red-500 text-xs mt-1" />
+            </div>
+
+            <div>
+                <label for="password" class="block font-outfit font-bold text-gray-500 text-sm">Password</label>
+                <div class="relative">
+                    <InputText id="password" 
+                                type="@(showPassword ? "text" : "password")"
+                                @bind-Value="registerModel.Password" 
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+                                placeholder="••••••••••" />
+                    <button type="button" 
+                            @onclick="TogglePasswordVisibility" 
+                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-gray-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="@(showPassword ? "M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" : "M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z")" />
+                        </svg>
+                    </button>
+                </div>
+                <ValidationMessage For="@(() => registerModel.Password)" class="text-red-500 text-xs mt-1" />
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <label for="nif" class="block font-outfit font-bold text-gray-500 text-sm">NIF</label>
+                    <InputText id="nif"
+                                @bind-Value="registerModel.NIF"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+                                placeholder="000000000" />
+                    <ValidationMessage For="@(() => registerModel.NIF)" class="text-red-500 text-xs mt-1" />
+                </div>
+                <div class="flex-1">
+                    <label for="birthDate" class="block font-outfit font-bold text-gray-500 text-sm">Data de Nascimento</label>
+                    <InputText id="birthDate"
+                                @bind-Value="registerModel.BirthDate"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+                                placeholder="30-10-2004" />
+                    <ValidationMessage For="@(() => registerModel.BirthDate)" class="text-red-500 text-xs mt-1" />
+                </div>
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-custom_green font-outfit font-extrabold text-lg md:text-xl text-white py-3 rounded-full 
+                        hover:bg-custom_gray hover:border-custom_green hover:ring-4 hover:ring-custom_green hover:text-custom_green 
+                            hover:shadow-lg hover:scale-105 
+                            transition-all duration-500 ease-in-out">
+                Confirmar
+            </button>
+
+            <div class="text-center font-bold text-gray-500 text-sm font-outfit py-4">
+                Já tens conta? 
+                <a href="/login" class="text-custom_green underline transition-colors">Faz login!</a>
+            </div>
+        </EditForm>
+    </div>
+
+    <SuccessModal 
+        IsVisible="@showSuccessModal" 
+        Title="Sucesso!" 
+        Message="A sua conta foi criada com sucesso!" 
+        OnClose="@NavigateToLogin" />
+</div>
+
+@code {
+    private RegisterModel registerModel = new();
+    private bool showPassword = false;
+    private bool showSuccessModal = false;
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private async Task RegisterUser()
+    {
+        var existingUser = await db.GetUser(registerModel.Email);
+        if (existingUser != null)
+        {
+            // You might want to replace this with a custom error modal or toast
+            await js.InvokeVoidAsync("alert", "Já existe uma conta com este email.");
+            return;
+        }
+        
+        var existingNif = await db.GetClienteByNIF(registerModel.NIF);
+        if (existingNif != null)
+        {
+            await js.InvokeVoidAsync("alert", "Já existe uma conta com este NIF.");
+            return;
+        }
+
+        if (!IsMaiorDeIdade(registerModel.BirthDate))
+        {
+            await js.InvokeVoidAsync("alert", "É necessário ter 18 anos ou mais para criar uma conta.");
+            return;
+        }
+
+        
+
+        await db.CreateCliente(
+            registerModel.Nome,
+            registerModel.Email,
+            BCrypt.HashPassword(registerModel.Password),
+            registerModel.NumeroTelemovel,
+            Enum.Parse<Tipo>("Cliente"),
+            registerModel.NIF,
+            DateOnly.ParseExact(registerModel.BirthDate, "dd-MM-yyyy")
+        );
+
+        showSuccessModal = true;
+    }
+    private bool IsMaiorDeIdade(string birthDate)
+    {
+        DateOnly dataNascimento = DateOnly.ParseExact(birthDate, "dd-MM-yyyy");
+        DateOnly dataAtual = DateOnly.FromDateTime(DateTime.Now);
+
+        int idade = dataAtual.Year - dataNascimento.Year;
+
+        if (dataAtual < dataNascimento.AddYears(idade))
+        {
+            idade--; 
+        }
+
+        return idade >= 18;
+    }
+
+    private void NavigateToLogin()
+    {
+        NavManager.NavigateTo("/login", true);
+    }
+
+    private class RegisterModel
+    {
+        [Required(ErrorMessage = "O nome é obrigatório")]
+        public string Nome { get; set; }
+
+        [Required(ErrorMessage = "O email é obrigatório")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "A password é obrigatória")]
+        [MinLength(8, ErrorMessage = "A senha deve ter pelo menos 8 caracteres")]
+        public string Password { get; set; }
+
+        [Required(ErrorMessage = "O número de telemóvel é obrigatório")]
+        [RegularExpression(@"^[9][1236][0-9]{7}$", ErrorMessage = "Número inválido")]
+        public string NumeroTelemovel { get; set; }
+
+        [Required(ErrorMessage = "O NIF é obrigatório")]
+        [RegularExpression(@"^[123567][0-9]{8}$", ErrorMessage = "O NIF deve ter 9 dígitos")]
+        public string NIF { get; set; }
+
+        [Required(ErrorMessage = "A data de nascimento é obrigatória")]
+        [RegularExpression(@"^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$", 
+        ErrorMessage = "A data deve estar no formato dd-mm-aaaa")]
+        public string BirthDate { get; set; }
+    }
+}

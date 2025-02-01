@@ -1,0 +1,179 @@
+@page "/paineladmin"
+@using Bloomify.Shared
+
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthProvider
+@inject INotificationService notificationService
+
+@if (tipo == null)
+{
+    <div class="flex justify-center items-center h-screen">
+        <span>Loading...</span>
+    </div>
+}
+
+@if(tipo != "Admin")
+{
+    <Error403 />
+}else
+{
+<div class="h-screen overflow-x-hidden bg-white relative"> 
+    <NavBarUtilizador />
+    <div class="absolute inset-0 w-auto h-auto overflow-hidden">
+        <svg viewBox="0 0 1280 672" fill="none" xmlns="http://www.w3.org/2000/svg" 
+            class="w-full h-full object-cover">
+            <g filter="url(#filter0_f_32_4)">
+                <path d="M567.097 1641.67C1087.23 1781.04 1602.84 1543.37 1718.74 1110.82C1834.65 678.269 1506.95 214.636 986.815 75.2658C466.679 -64.1041 -48.9306 173.566 -164.832 606.118C-280.734 1038.67 46.962 1502.3 567.097 1641.67Z" fill="url(#paint0_linear_32_4)"/>
+            </g>
+            <defs>
+                <filter id="filter0_f_32_4" x="-223.138" y="0.393372" width="2000.19" height="1716.15" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                    <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                    <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_32_4"/>
+                </filter>
+                <linearGradient id="paint0_linear_32_4" x1="777" y1="100" x2="777" y2="1000" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#3F784C" stop-opacity="0"/>
+                    <stop offset="50%" stop-color="#3F784C" stop-opacity="0.6"/>
+                    <stop offset="100%" stop-color="#3F784C" stop-opacity="0.95"/>
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+    
+    <div class="relative h-auto flex flex-col items-center justify-center px-8 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 font-outfit mt-0 md:mt-10 xl:mt-10">
+        <h1 class="text-3xl sm:text-6xl lg:text-7xl xl:text-8xl font-black text-custom_green mb-8 sm:mb-10 lg:mb-12 text-center">Painel de Administração</h1>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-4xl w-full px-2 sm:px-4">
+            <button @onclick="NavigateToProdutos" class="bg-white rounded-xl shadow-lg px-4 sm:px-6 py-8 sm:py-12 lg:py-14 hover:shadow-xl transition-all duration-300 border-4 border-custom_green">
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-custom_green text-center">Produtos</h2>
+            </button>
+            
+            <button @onclick="NavigateToComponentes" class="bg-white rounded-xl shadow-lg px-4 sm:px-6 py-8 sm:py-12 lg:py-14 hover:shadow-xl transition-all duration-300 border-4 border-custom_green">
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-custom_green text-center">Componentes</h2>
+            </button>
+            
+            <button @onclick="NavigateToLinhas" class="bg-white rounded-xl shadow-lg px-4 sm:px-6 py-8 sm:py-12 lg:py-14 hover:shadow-xl transition-all duration-300 border-4 border-custom_green">
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-custom_green text-center whitespace-normal">Linhas de Montagem</h2>
+            </button>
+            
+            <button @onclick="NavigateToEncomendas" class="bg-white rounded-xl shadow-lg px-4 sm:px-6 py-8 sm:py-12 lg:py-14 hover:shadow-xl transition-all duration-300 border-4 border-custom_green">
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-custom_green text-center">Encomendas</h2>
+            </button>
+        </div>
+    </div>
+</div>
+@if (showPopup)
+{
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="absolute inset-0 bg-gray-800 bg-opacity-50 backdrop-blur-md"></div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-4xl w-full relative z-10 max-h-[80vh] flex flex-col">
+            <div class="flex items-center mb-6 space-x-3">
+                <svg class="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12c0 4.418-3.582 8-8 8H11c-4.418 0-8-3.582-8-8 0-4.418 3.582-8 8-8h2c4.418 0 8 3.582 8 8z"/>
+                </svg>
+                <h3 class="text-2xl font-semibold text-gray-800">Notificações</h3>
+            </div>
+
+            <div class="space-y-4 text-gray-700 flex-1 overflow-y-auto">
+                @if (notifications != null && notifications.Any())
+                {
+                    <ul class="space-y-3">
+                        @foreach (var notificacao in notifications)
+                        {
+                            <li class="flex items-start bg-gray-50 hover:bg-gray-100 transition duration-200 ease-in-out rounded-lg p-4 shadow-md">
+                                <svg class="h-6 w-6 text-green-500 mr-4 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <div class="flex flex-col flex-grow min-w-0">
+                                    <span class="text-lg font-semibold text-gray-800 break-words">@notificacao.Titulo</span>
+                                    <p class="text-sm text-gray-600 mt-1 break-words">@notificacao.Descricao</p>
+                                </div>
+                                <button class="ml-auto text-sm text-red-500 hover:text-red-700 flex items-center space-x-1 flex-shrink-0" @onclick="() => MarkAsRead(notificacao)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="25" height="25" viewBox="0 0 30 30"
+                                        style="fill:#FA5252;">
+                                        <path d="M 13 3 A 1.0001 1.0001 0 0 0 11.986328 4 L 6 4 A 1.0001 1.0001 0 1 0 6 6 L 24 6 A 1.0001 1.0001 0 1 0 24 4 L 18.013672 4 A 1.0001 1.0001 0 0 0 17 3 L 13 3 z M 6 8 L 6 24 C 6 25.105 6.895 26 8 26 L 22 26 C 23.105 26 24 25.105 24 24 L 24 8 L 6 8 z"></path>
+                                    </svg>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-gray-600 text-center text-lg">Nenhuma notificação encontrada.</p>
+                }
+            </div>
+
+            <!-- Botão de Fechar -->
+            <div class="flex justify-center mt-6">
+                <button class="bg-custom_green/95 text-white px-8 py-3 rounded-full shadow-lg hover:bg-custom_green transition-all duration-300 ease-in-out transform hover:scale-105" @onclick="ClosePopup">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+}
+}
+@code {
+    private string tipo;
+    private List<NotificationModel> notifications = new List<NotificationModel>();
+    private bool showPopup = false; // Controla a visibilidade do modal
+
+    // Método para fechar o popup
+    private void ClosePopup()
+    {
+        showPopup = false;
+    }
+
+    // Método para marcar a notificação como lida (ou removê-la)
+    private void MarkAsRead(NotificationModel notificacao)
+    {
+        var index = notifications.IndexOf(notificacao);
+        if (index >= 0)
+        {
+            notifications.RemoveAt(index); // Aqui, você pode atualizar o status da notificação
+        }
+        notificationService.DeleteNotification(notificacao.Id);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = (AuthProvider)AuthProvider;
+        string? role = await auth.GetTipo();
+
+        if (role != null)
+        {
+            tipo = role;
+        }
+
+        notifications = await notificationService.GetUserNotifications(1);
+
+        // Verifica se há notificações, se sim, exibe o popup
+        if (notifications != null && notifications.Any())
+        {
+            showPopup = true;
+        }
+    }
+
+    private void NavigateToProdutos()
+    {
+        NavManager.NavigateTo("/paineladmin/produtos", true);
+    }
+
+    private void NavigateToComponentes()
+    {
+        NavManager.NavigateTo("/paineladmin/componentes", true);
+    }
+
+    private void NavigateToLinhas()
+    {
+        NavManager.NavigateTo("/paineladmin/linhas", true);
+    }
+
+    private void NavigateToEncomendas()
+    {
+        NavManager.NavigateTo("/paineladmin/encomendas", true);
+    }
+}
+

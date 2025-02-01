@@ -1,0 +1,110 @@
+@page "/destaques"
+@using Bloomify.Shared
+
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager NavManager
+
+<PageTitle>Destaques - Bloomify</PageTitle>
+
+<div class="bg-white w-full min-h-screen flex flex-col relative">
+
+    <div class="absolute inset-0 w-full h-full overflow-hidden">
+        <svg viewBox="0 0 1280 672" fill="none" xmlns="http://www.w3.org/2000/svg" 
+            class="w-full h-full object-cover">
+            <g filter="url(#filter0_f_32_4)">
+                <path d="M567.097 1641.67C1087.23 1781.04 1602.84 1543.37 1718.74 1110.82C1834.65 678.269 1506.95 214.636 986.815 75.2658C466.679 -64.1041 -48.9306 173.566 -164.832 606.118C-280.734 1038.67 46.962 1502.3 567.097 1641.67Z" fill="url(#paint0_linear_32_4)"/>
+            </g>
+            <defs>
+                <filter id="filter0_f_32_4" x="-223.138" y="0.393372" width="2000.19" height="1716.15" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                    <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                    <feGaussianBlur stdDeviation="25" result="effect1_foregroundBlur_32_4"/>
+                </filter>
+                <linearGradient id="paint0_linear_32_4" x1="777" y1="100" x2="777" y2="1000" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#3F784C" stop-opacity="0"/>
+                    <stop offset="50%" stop-color="#3F784C" stop-opacity="0.6"/>
+                    <stop offset="100%" stop-color="#3F784C" stop-opacity="0.95"/>
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+
+    @if(isLogged)
+    {
+        <NavBarUtilizador />
+    }else{
+        <NavBar />
+    }
+
+    <main class="flex-1 flex items-center justify-center relative px-4 py-8 md:px-8 lg:px-16">
+        <div class="text-center w-full max-w-7xl mx-auto">
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl 2xl:text-8xl font-outfit font-black text-custom_green leading-tight drop-shadow-lg mb-8">
+                OS NOSSOS PRODUTOS
+            </h1>
+
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-16 xl:gap-32">
+                <!-- Standard Edition Card -->
+                <div class="relative flex-1 min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] w-full">
+                    <!-- Background with opacity -->
+                    <div class="absolute inset-0 bg-custom_light_gray opacity-50 backdrop-blur-md rounded-3xl shadow-2xl [filter:drop-shadow(0px_0px_20px_rgba(0,0,0,0.65))]"></div>
+                    
+                    <!-- Content -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-end p-4 pb-8">
+                        <img src="assets/vasoPaginaInicial.png" alt="vaso" 
+                            class="w-auto object-contain h-48 sm:h-56 md:h-64 lg:h-96">
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-outfit font-black text-custom_green leading-tight mb-4">
+                            Standard Edition
+                        </h2>
+                        <button @onclick="NavigateToStandard" class="bg-custom_green rounded-full text-white text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-outfit font-bold px-6 py-2 sm:px-8 lg:px-10 hover:bg-opacity-90 transition-colors">
+                            Saiba Mais
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Deluxe Edition Card -->
+                <div class="relative flex-1 min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] w-full">
+                    <!-- Background with opacity -->
+                    <div class="absolute inset-0 bg-custom_light_gray opacity-50 backdrop-blur-md rounded-3xl shadow-2xl [filter:drop-shadow(0px_0px_20px_rgba(0,0,0,0.65))]"></div>
+                    
+                    <!-- Content -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-end p-4 pb-8">
+                        <img src="assets/vasoDeluxe.png" alt="vaso" 
+                            class="w-auto object-contain h-48 sm:h-56 md:h-64 lg:h-96">
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-outfit font-black text-custom_green mb-4 flex items-center gap-2">
+                            Deluxe Edition
+                            <img src="assets/iconDeluxe.png" alt="deluxe icon" class="inline-block w-8 sm:w-10 lg:w-12">
+                        </h2>
+                        <button @onclick="NavigateToDeluxe" class="bg-custom_green rounded-full text-white text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-outfit font-bold px-6 py-2 sm:px-8 lg:px-10 hover:bg-opacity-90 transition-colors">
+                            Saiba Mais
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+@code {
+    private bool isLogged;
+
+    private void NavigateToStart()
+    {
+        NavManager.NavigateTo("/login", true);
+    }
+
+    private void NavigateToStandard()
+    {
+        NavManager.NavigateTo("/vaso-standard");
+    }
+
+    private void NavigateToDeluxe()
+    {
+        NavManager.NavigateTo("/vaso-deluxe");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ourProvider = (AuthProvider)AuthProvider;
+        isLogged = await ourProvider.IsAuthenticated();
+    }
+}
